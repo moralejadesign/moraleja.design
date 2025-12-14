@@ -2,10 +2,11 @@
 
 import { ArrowUpRight } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type Masonry from "masonry-layout"
 import { projects } from "@/lib/projects"
 import { getBlobUrl } from "@/lib/config"
+import { useTransitionStore } from "@/stores/transition"
 
 export function MasonryGrid() {
   const [hoveredId, setHoveredId] = useState<number | null>(null)
@@ -13,6 +14,8 @@ export function MasonryGrid() {
   const containerRef = useRef<HTMLDivElement>(null)
   const sizerRef = useRef<HTMLDivElement>(null)
   const masonryRef = useRef<Masonry | null>(null)
+  const router = useRouter()
+  const setClickedCard = useTransitionStore((state) => state.setClickedCard)
 
   useEffect(() => {
     if (!containerRef.current || !sizerRef.current) return
@@ -74,14 +77,34 @@ export function MasonryGrid() {
         className={`masonry-container transition-opacity duration-300 ${isReady ? "opacity-100" : "opacity-0"}`}
       >
         <div ref={sizerRef} className="grid-sizer invisible absolute w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" />
-        {projects.map((project) => (
-          <Link
-            key={project.id}
-            href={`/project/${project.slug}`}
-            className="grid-item group relative mb-6 block w-full overflow-visible transition-all duration-300 hover:scale-[1.02] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
-            onMouseEnter={() => setHoveredId(project.id)}
-            onMouseLeave={() => setHoveredId(null)}
-          >
+        {projects.map((project) => {
+          const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+            e.preventDefault()
+            const cardElement = e.currentTarget
+            const rect = cardElement.getBoundingClientRect()
+            const imageElement = cardElement.querySelector('img')
+            
+            setClickedCard({
+              x: rect.left,
+              y: rect.top,
+              width: rect.width,
+              height: rect.height,
+              imageUrl: imageElement?.src || getBlobUrl(project.thumbnail) || "",
+            })
+            
+            setTimeout(() => {
+              router.push(`/project/${project.slug}`)
+            }, 0)
+          }
+
+          return (
+            <div
+              key={project.id}
+              onClick={handleClick}
+              className="grid-item group relative mb-6 block w-full cursor-pointer overflow-visible transition-all duration-300 hover:scale-[1.02] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+              onMouseEnter={() => setHoveredId(project.id)}
+              onMouseLeave={() => setHoveredId(null)}
+            >
             {/* Corner crosses - Geist style (diagonal: top-left & bottom-right only) */}
             <span className="corner-cross top-left" aria-hidden="true" />
             <span className="corner-cross bottom-right" aria-hidden="true" />
@@ -125,8 +148,9 @@ export function MasonryGrid() {
                 } ${hoveredId === project.id ? "translate-x-1 -translate-y-1 opacity-100" : "opacity-60"}`}
               />
             </div>
-          </Link>
-        ))}
+          </div>
+          )
+        })}
       </div>
     </div>
   )
