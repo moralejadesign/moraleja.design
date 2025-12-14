@@ -29,11 +29,15 @@ export function Header() {
       >
         <Link
           href="/"
-          className={`font-bold tracking-tight transition-all duration-300 ${
-            isScrolled ? "text-lg md:text-xl" : "text-xl md:text-2xl"
+          className={`transition-all duration-300 ${
+            isScrolled ? "h-6 md:h-7" : "h-7 md:h-8"
           }`}
         >
-          Moraleja
+          <img
+            src="/brand_assets/MORALEJA_BRAND.svg"
+            alt="Moraleja"
+            className="h-full w-auto invert dark:invert-0"
+          />
         </Link>
 
         <nav className="flex items-center gap-6 md:gap-8">

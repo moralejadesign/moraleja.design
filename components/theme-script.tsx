@@ -3,20 +3,19 @@ export function ThemeScript() {
     const STORAGE_KEY = 'theme-mode';
     const html = document.documentElement;
 
-    let activeMode = 'light';
+    let activeMode = 'dark';
     
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved === 'dark' || saved === 'light') {
         activeMode = saved;
-      } else {
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        activeMode = isDark ? 'dark' : 'light';
       }
     } catch (e) {}
 
     if (activeMode === 'dark') {
       html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
     }
     
     html.style.colorScheme = activeMode;

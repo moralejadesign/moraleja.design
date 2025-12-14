@@ -70,7 +70,7 @@ function CardItem({ project, isMobile, isHovered, onHover, onClick, onImageLoad 
     <div
       ref={cardRef}
       onClick={handleClick}
-      className="grid-item group relative mb-3 block w-[calc(50%-6px)] cursor-pointer overflow-visible transition-all duration-300 hover:scale-[1.02] md:mb-6 md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+      className="grid-item group relative mb-4 block w-[calc(50%-8px)] cursor-pointer overflow-visible transition-all duration-300 hover:scale-[1.02] md:mb-6 md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
     >
@@ -111,13 +111,7 @@ function CardItem({ project, isMobile, isHovered, onHover, onClick, onImageLoad 
         />
       </div>
 
-      <div 
-        className={`absolute bottom-0 left-0 right-0 p-2 md:p-4 lg:p-6 ${
-          project.textContrast === "dark" 
-            ? "bg-gradient-to-t from-white/80 to-transparent" 
-            : "bg-gradient-to-t from-black/60 to-transparent"
-        }`}
-      >
+      <div className="absolute bottom-0 left-0 right-0 p-2 md:p-4 lg:p-6">
         <h2 
           className={`text-xs font-semibold tracking-wide md:text-sm lg:text-base ${
             project.textContrast === "dark" ? "text-gray-900" : "text-white"
@@ -152,8 +146,8 @@ export function MasonryGrid() {
     let masonryInstance: Masonry | null = null
 
     const getGutter = () => {
-      if (typeof window === "undefined") return 12
-      return window.innerWidth >= 768 ? 24 : 12
+      if (typeof window === "undefined") return 16
+      return window.innerWidth >= 768 ? 24 : 16
     }
 
     const checkMobile = () => {
@@ -219,7 +213,7 @@ export function MasonryGrid() {
         ref={containerRef} 
         className={`masonry-container transition-opacity duration-300 ${isReady ? "opacity-100" : "opacity-0"}`}
       >
-        <div ref={sizerRef} className="grid-sizer invisible absolute w-[calc(50%-6px)] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" />
+        <div ref={sizerRef} className="grid-sizer invisible absolute w-[calc(50%-8px)] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" />
         {projects.map((project) => (
           <CardItem
             key={project.id}

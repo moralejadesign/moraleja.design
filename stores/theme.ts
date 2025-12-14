@@ -25,17 +25,16 @@ type ThemeStore = ThemeState & ThemeActions & ThemeComputed;
 const STORAGE_KEY = "theme-mode";
 
 const loadFromStorage = (): ThemeMode => {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode;
     if (stored === "dark" || stored === "light") return stored;
     
-    return window.matchMedia("(prefers-color-scheme: dark)").matches 
-      ? "dark" 
-      : "light";
+    // Default to dark if no preference stored
+    return "dark";
   } catch {
-    return "light";
+    return "dark";
   }
 };
 
