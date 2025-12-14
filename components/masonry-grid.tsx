@@ -1,26 +1,165 @@
 "use client"
 
-import { ArrowUpRight } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import type Masonry from "masonry-layout"
 import { projects } from "@/lib/projects"
 import { getBlobUrl } from "@/lib/config"
 import { useTransitionStore } from "@/stores/transition"
 
+function AnimatedNumber({ value, isVisible }: { value: number; isVisible: boolean }) {
+  const [displayValue, setDisplayValue] = useState(0)
+  
+  useEffect(() => {
+    if (!isVisible) {
+      setDisplayValue(0)
+      return
+    }
+    
+    const duration = 400
+    const steps = 20
+    const increment = value / steps
+    let current = 0
+    
+    const timer = setInterval(() => {
+      current += increment
+      if (current >= value) {
+        setDisplayValue(value)
+        clearInterval(timer)
+      } else {
+        setDisplayValue(Math.round(current))
+      }
+    }, duration / steps)
+    
+    return () => clearInterval(timer)
+  }, [value, isVisible])
+  
+  return <span>{displayValue}</span>
+}
+
+interface CardItemProps {
+  project: typeof projects[0]
+  isMobile: boolean
+  isHovered: boolean
+  onHover: (hovered: boolean) => void
+  onClick: (rect: DOMRect, imageUrl: string) => void
+  onImageLoad: () => void
+}
+
+function CardItem({ project, isMobile, isHovered, onHover, onClick, onImageLoad }: CardItemProps) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const cardHeight = Math.round(project.heightRatio * (isMobile ? 150 : 250))
+
+  useEffect(() => {
+    if (isHovered && cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect()
+      setDimensions({ width: Math.round(rect.width), height: Math.round(rect.height) })
+    }
+  }, [isHovered])
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const imageElement = cardRef.current.querySelector('img')
+    onClick(rect, imageElement?.src || getBlobUrl(project.thumbnail) || "")
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      onClick={handleClick}
+      className="grid-item group relative mb-3 block w-[calc(50%-6px)] cursor-pointer overflow-visible transition-all duration-300 hover:scale-[1.02] md:mb-6 md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
+    >
+      {/* Corner crosses - Geist style */}
+      <span className="corner-cross top-left" aria-hidden="true" />
+      <span className="corner-cross bottom-right" aria-hidden="true" />
+      
+      {/* Dimension labels - Figma style */}
+      <span 
+        className={`absolute -top-4 left-1/2 -translate-x-1/2 font-mono text-[8px] text-muted-foreground/50 transition-all duration-300 ${
+          isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+        }`}
+        aria-hidden="true"
+      >
+        <AnimatedNumber value={dimensions.width} isVisible={isHovered} />
+      </span>
+      <span 
+        className={`absolute -right-3 top-1/2 -translate-y-1/2 rotate-90 font-mono text-[8px] text-muted-foreground/50 transition-all duration-300 ${
+          isHovered ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-1"
+        }`}
+        aria-hidden="true"
+      >
+        <AnimatedNumber value={dimensions.height} isVisible={isHovered} />
+      </span>
+      
+      <div className="card-border relative w-full overflow-hidden" style={{ height: `${cardHeight}px` }}>
+        <img
+          src={getBlobUrl(project.thumbnail) || "/placeholder.svg"}
+          alt={project.title}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onLoad={onImageLoad}
+        />
+
+        <div
+          className={`absolute inset-0 bg-black/0 transition-all duration-300 ${
+            isHovered ? "bg-black/20" : ""
+          }`}
+        />
+      </div>
+
+      <div 
+        className={`absolute bottom-0 left-0 right-0 p-2 md:p-4 lg:p-6 ${
+          project.textContrast === "dark" 
+            ? "bg-gradient-to-t from-white/80 to-transparent" 
+            : "bg-gradient-to-t from-black/60 to-transparent"
+        }`}
+      >
+        <h2 
+          className={`text-xs font-semibold tracking-wide md:text-sm lg:text-base ${
+            project.textContrast === "dark" ? "text-gray-900" : "text-white"
+          }`}
+        >
+          {project.title}
+        </h2>
+      </div>
+    </div>
+  )
+}
+
 export function MasonryGrid() {
   const [hoveredId, setHoveredId] = useState<number | null>(null)
   const [isReady, setIsReady] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const sizerRef = useRef<HTMLDivElement>(null)
   const masonryRef = useRef<Masonry | null>(null)
   const router = useRouter()
   const setClickedCard = useTransitionStore((state) => state.setClickedCard)
 
+  const relayout = useCallback(() => {
+    if (masonryRef.current && typeof masonryRef.current.layout === 'function') {
+      masonryRef.current.layout()
+    }
+  }, [])
+
   useEffect(() => {
     if (!containerRef.current || !sizerRef.current) return
 
     let masonryInstance: Masonry | null = null
+
+    const getGutter = () => {
+      if (typeof window === "undefined") return 12
+      return window.innerWidth >= 768 ? 24 : 12
+    }
+
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+    }
 
     const initMasonry = async () => {
       const MasonryModule = await import("masonry-layout")
@@ -29,7 +168,7 @@ export function MasonryGrid() {
       const instance = new Masonry(containerRef.current!, {
         itemSelector: ".grid-item",
         columnWidth: sizerRef.current,
-        gutter: 24,
+        gutter: getGutter(),
         percentPosition: true,
         transitionDuration: 0,
       })
@@ -40,6 +179,7 @@ export function MasonryGrid() {
         instance.layout()
       }
       
+      checkMobile()
       requestAnimationFrame(() => {
         setIsReady(true)
       })
@@ -48,8 +188,12 @@ export function MasonryGrid() {
     initMasonry()
 
     const handleResize = () => {
-      if (masonryRef.current && typeof masonryRef.current.layout === 'function') {
-        masonryRef.current.layout()
+      checkMobile()
+      if (masonryRef.current) {
+        (masonryRef.current as Masonry & { options: { gutter: number } }).options.gutter = getGutter()
+        if (typeof masonryRef.current.layout === 'function') {
+          masonryRef.current.layout()
+        }
       }
     }
 
@@ -64,93 +208,38 @@ export function MasonryGrid() {
     }
   }, [])
 
+  // Relayout when isMobile changes (card heights change)
   useEffect(() => {
-    if (masonryRef.current && typeof masonryRef.current.layout === 'function') {
-      masonryRef.current.layout()
-    }
-  }, [hoveredId])
+    relayout()
+  }, [isMobile, relayout])
 
   return (
-    <div className="w-full px-4 py-12 md:px-8 lg:px-12">
+    <div className="w-full px-3 py-8 md:px-8 md:py-12 lg:px-12">
       <div 
         ref={containerRef} 
         className={`masonry-container transition-opacity duration-300 ${isReady ? "opacity-100" : "opacity-0"}`}
       >
-        <div ref={sizerRef} className="grid-sizer invisible absolute w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" />
-        {projects.map((project) => {
-          const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-            e.preventDefault()
-            const cardElement = e.currentTarget
-            const rect = cardElement.getBoundingClientRect()
-            const imageElement = cardElement.querySelector('img')
-            
-            setClickedCard({
-              x: rect.left,
-              y: rect.top,
-              width: rect.width,
-              height: rect.height,
-              imageUrl: imageElement?.src || getBlobUrl(project.thumbnail) || "",
-            })
-            
-            setTimeout(() => {
-              router.push(`/project/${project.slug}`)
-            }, 0)
-          }
-
-          return (
-            <div
-              key={project.id}
-              onClick={handleClick}
-              className="grid-item group relative mb-6 block w-full cursor-pointer overflow-visible transition-all duration-300 hover:scale-[1.02] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
-              onMouseEnter={() => setHoveredId(project.id)}
-              onMouseLeave={() => setHoveredId(null)}
-            >
-            {/* Corner crosses - Geist style (diagonal: top-left & bottom-right only) */}
-            <span className="corner-cross top-left" aria-hidden="true" />
-            <span className="corner-cross bottom-right" aria-hidden="true" />
-            
-            <div className="card-border relative w-full overflow-hidden" style={{ height: `${project.heightRatio * 250}px` }}>
-              <img
-                src={getBlobUrl(project.thumbnail) || "/placeholder.svg"}
-                alt={project.title}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                onLoad={() => {
-                  if (masonryRef.current && typeof masonryRef.current.layout === 'function') {
-                    masonryRef.current.layout()
-                  }
-                }}
-              />
-
-              <div
-                className={`absolute inset-0 bg-black/0 transition-all duration-300 ${
-                  hoveredId === project.id ? "bg-black/20" : ""
-                }`}
-              />
-            </div>
-
-            <div 
-              className={`absolute bottom-0 left-0 right-0 flex items-center justify-between p-4 md:p-6 ${
-                project.textContrast === "dark" 
-                  ? "bg-gradient-to-t from-white/80 to-transparent" 
-                  : "bg-gradient-to-t from-black/60 to-transparent"
-              }`}
-            >
-              <h2 
-                className={`text-sm font-semibold tracking-wide md:text-base ${
-                  project.textContrast === "dark" ? "text-gray-900" : "text-white"
-                }`}
-              >
-                {project.title}
-              </h2>
-              <ArrowUpRight
-                className={`h-5 w-5 transition-all duration-300 md:h-6 md:w-6 ${
-                  project.textContrast === "dark" ? "text-gray-900" : "text-white"
-                } ${hoveredId === project.id ? "translate-x-1 -translate-y-1 opacity-100" : "opacity-60"}`}
-              />
-            </div>
-          </div>
-          )
-        })}
+        <div ref={sizerRef} className="grid-sizer invisible absolute w-[calc(50%-6px)] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" />
+        {projects.map((project) => (
+          <CardItem
+            key={project.id}
+            project={project}
+            isMobile={isMobile}
+            isHovered={hoveredId === project.id}
+            onHover={(hovered) => setHoveredId(hovered ? project.id : null)}
+            onClick={(rect, imageUrl) => {
+              setClickedCard({
+                x: rect.left,
+                y: rect.top,
+                width: rect.width,
+                height: rect.height,
+                imageUrl,
+              })
+              setTimeout(() => router.push(`/project/${project.slug}`), 0)
+            }}
+            onImageLoad={relayout}
+          />
+        ))}
       </div>
     </div>
   )
