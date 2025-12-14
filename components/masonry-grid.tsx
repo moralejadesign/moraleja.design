@@ -80,7 +80,7 @@ function CardItem({ project, isMobile, isHovered, onHover, onClick, onImageLoad 
       
       {/* Dimension labels - Figma style */}
       <span 
-        className={`absolute -top-4 left-1/2 -translate-x-1/2 font-mono text-[8px] text-muted-foreground/50 transition-all duration-300 ${
+        className={`absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[10px] text-muted-foreground/50 transition-all duration-300 ${
           isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
         }`}
         aria-hidden="true"
@@ -88,7 +88,7 @@ function CardItem({ project, isMobile, isHovered, onHover, onClick, onImageLoad 
         <AnimatedNumber value={dimensions.width} isVisible={isHovered} />
       </span>
       <span 
-        className={`absolute -right-3 top-1/2 -translate-y-1/2 rotate-90 font-mono text-[8px] text-muted-foreground/50 transition-all duration-300 ${
+        className={`absolute -right-4 top-1/2 -translate-y-1/2 rotate-90 font-mono text-[10px] text-muted-foreground/50 transition-all duration-300 ${
           isHovered ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-1"
         }`}
         aria-hidden="true"
