@@ -6,7 +6,7 @@ import { getProjectBySlug } from "@/lib/projects"
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const project = getProjectBySlug(slug)
+  const project = await getProjectBySlug(slug)
 
   if (!project) {
     notFound()
@@ -22,4 +22,3 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
     </div>
   )
 }
-

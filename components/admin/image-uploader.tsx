@@ -1,0 +1,183 @@
+"use client";
+
+import { useState, useCallback, useRef } from "react";
+import { Upload, X, Loader2 } from "lucide-react";
+
+interface ImageUploaderProps {
+  onUpload: (url: string) => void;
+  className?: string;
+}
+
+export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadFile = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload an image file");
+        return;
+      }
+
+      setIsUploading(true);
+      setPreview(URL.createObjectURL(file));
+
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error("Upload failed");
+
+        const { url } = await res.json();
+        onUpload(url);
+        setPreview(null);
+      } catch (error) {
+        console.error("Upload error:", error);
+        alert("Failed to upload image");
+        setPreview(null);
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [onUpload]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+
+      const file = e.dataTransfer.files[0];
+      if (file) uploadFile(file);
+    },
+    [uploadFile]
+  );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      const items = e.clipboardData.items;
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            uploadFile(file);
+            break;
+          }
+        }
+      }
+    },
+    [uploadFile]
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) uploadFile(file);
+    },
+    [uploadFile]
+  );
+
+  return (
+    <div
+      className={`relative ${className}`}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={handleDrop}
+      onPaste={handlePaste}
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+      
+      {preview ? (
+        <div className="relative aspect-video overflow-hidden bg-muted">
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-full h-full object-cover"
+          />
+          {isUploading && (
+            <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className={`w-full aspect-video border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors ${
+            isDragging
+              ? "border-foreground bg-muted"
+              : "border-muted-foreground/25 hover:border-muted-foreground/50"
+          }`}
+        >
+          <Upload className="h-8 w-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            Drop image, paste, or click to upload
+          </p>
+        </button>
+      )}
+    </div>
+  );
+}
+
+interface ImageFieldProps {
+  value: string;
+  onChange: (url: string) => void;
+  label?: string;
+}
+
+export function ImageField({ value, onChange, label }: ImageFieldProps) {
+  if (value) {
+    return (
+      <div className="space-y-2">
+        {label && (
+          <label className="text-sm font-medium text-muted-foreground">
+            {label}
+          </label>
+        )}
+        <div className="relative group">
+          <img
+            src={value}
+            alt="Uploaded"
+            className="w-full aspect-video object-cover"
+          />
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="absolute top-2 right-2 p-1.5 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {label && (
+        <label className="text-sm font-medium text-muted-foreground">
+          {label}
+        </label>
+      )}
+      <ImageUploader onUpload={onChange} />
+    </div>
+  );
+}

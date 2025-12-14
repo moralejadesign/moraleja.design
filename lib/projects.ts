@@ -1,15 +1,26 @@
-import projectsData from "@/data/projects.json"
-import { ProjectsSchema, type Project } from "./types"
+import { db, projects, type Project } from "@/db";
+import { eq, desc } from "drizzle-orm";
 
-const validatedProjects = ProjectsSchema.parse(projectsData)
+export type { Project } from "@/db";
 
-export const projects: Project[] = validatedProjects
-
-export function getProjectBySlug(slug: string): Project | undefined {
-  return projects.find((project) => project.slug === slug)
+export async function getAllProjects(): Promise<Project[]> {
+  return db.select().from(projects).orderBy(desc(projects.createdAt));
 }
 
-export function getAllProjectSlugs(): string[] {
-  return projects.map((project) => project.slug)
+export async function getProjectBySlug(slug: string): Promise<Project | null> {
+  const [project] = await db
+    .select()
+    .from(projects)
+    .where(eq(projects.slug, slug))
+    .limit(1);
+  
+  return project ?? null;
 }
 
+export async function getAllProjectSlugs(): Promise<string[]> {
+  const allProjects = await db
+    .select({ slug: projects.slug })
+    .from(projects);
+  
+  return allProjects.map((p) => p.slug);
+}

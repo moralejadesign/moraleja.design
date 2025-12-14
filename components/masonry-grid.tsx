@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import type Masonry from "masonry-layout"
-import { projects } from "@/lib/projects"
+import type { Project } from "@/lib/projects"
 import { getBlobUrl } from "@/lib/config"
 import { useTransitionStore } from "@/stores/transition"
 
@@ -38,7 +38,7 @@ function AnimatedNumber({ value, isVisible }: { value: number; isVisible: boolea
 }
 
 interface CardItemProps {
-  project: typeof projects[0]
+  project: Project
   isMobile: boolean
   isHovered: boolean
   onHover: (hovered: boolean) => void
@@ -124,7 +124,11 @@ function CardItem({ project, isMobile, isHovered, onHover, onClick, onImageLoad 
   )
 }
 
-export function MasonryGrid() {
+interface MasonryGridProps {
+  projects: Project[]
+}
+
+export function MasonryGrid({ projects }: MasonryGridProps) {
   const [hoveredId, setHoveredId] = useState<number | null>(null)
   const [isReady, setIsReady] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
