@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db, projects } from "@/db";
-import { desc } from "drizzle-orm";
+import { asc, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
     const allProjects = await db
       .select()
       .from(projects)
-      .orderBy(desc(projects.createdAt));
+      .orderBy(asc(projects.position));
     
     return NextResponse.json(allProjects);
   } catch (error) {
@@ -27,6 +27,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     
+    // Get max position to add new project at the end
+    const [maxResult] = await db
+      .select({ maxPos: sql<number>`COALESCE(MAX(${projects.position}), -1)` })
+      .from(projects);
+    const nextPosition = (maxResult?.maxPos ?? -1) + 1;
+    
     const [newProject] = await db
       .insert(projects)
       .values({
@@ -36,6 +42,7 @@ export async function POST(request: Request) {
         heightRatio: body.heightRatio ?? 1.5,
         textContrast: body.textContrast ?? "light",
         blocks: body.blocks ?? [],
+        position: nextPosition,
       })
       .returning();
 

@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, real, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, real, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
 
 export type BlockType = 
   | { type: "full-image"; url: string; alt?: string }
@@ -15,6 +15,7 @@ export const projects = pgTable("projects", {
   heightRatio: real("height_ratio").notNull().default(1.5),
   textContrast: varchar("text_contrast", { length: 10 }).default("light"),
   blocks: jsonb("blocks").$type<BlockType[]>().notNull().default([]),
+  position: integer("position").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -70,6 +70,7 @@ async function migrate() {
 
   // Use a Set to track unique slugs (avoid duplicates)
   const seenSlugs = new Set<string>();
+  let position = 0;
 
   for (const oldProject of projectsData as OldProject[]) {
     // Skip if we've already seen this slug
@@ -94,6 +95,7 @@ async function migrate() {
         heightRatio: oldProject.heightRatio,
         textContrast: oldProject.textContrast || "light",
         blocks,
+        position: position++,
       });
       console.log(`✓ Migrated: ${oldProject.title}`);
     } catch (error) {

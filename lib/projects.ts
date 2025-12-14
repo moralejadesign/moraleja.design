@@ -1,10 +1,10 @@
 import { db, projects, type Project } from "@/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 
 export type { Project } from "@/db";
 
 export async function getAllProjects(): Promise<Project[]> {
-  return db.select().from(projects).orderBy(desc(projects.createdAt));
+  return db.select().from(projects).orderBy(asc(projects.position));
 }
 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
