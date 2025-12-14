@@ -11,7 +11,8 @@
     "content": {
       "description": "Kebo App is a 100k users app that allows you to track your spending and save money.",
       "text": "The app allows you to track your spending and save money. It also allows you to create a budget and track your progress."
-    }
+    },
+    "textContrast": "light"
   },
   {
     "id": 2,
@@ -25,7 +26,98 @@
     "content": {
       "description": "Retro poster design with vintage typography",
       "text": "A vibrant design that captures the essence of retro aesthetics."
-    }
+    },
+    "textContrast": "light"
+  },
+  {
+    "id": 3,
+    "slug": "kebo",
+    "title": "KEBO",
+    "thumbnail": "/projects/KEBO_PROJECT-01.jpg",
+    "heightRatio": 1.7,
+    "images": [
+      "/projects/KEBO_PROJECT-01.jpg"
+    ],
+    "content": {
+      "description": "Kebo App is a 100k users app that allows you to track your spending and save money.",
+      "text": "The app allows you to track your spending and save money. It also allows you to create a budget and track your progress."
+    },
+    "textContrast": "light"
+  },
+  {
+    "id": 4,
+    "slug": "the-hackathon-company",
+    "title": "THE HACKATHON COMPANY",
+    "thumbnail": "/projects/THC-Brand01-01.png",
+    "heightRatio": 2.2,
+    "images": [
+      "/projects/THC-Brand01-01.png"
+    ],
+    "content": {
+      "description": "Retro poster design with vintage typography",
+      "text": "A vibrant design that captures the essence of retro aesthetics."
+    },
+    "textContrast": "light"
+  },
+  {
+    "id": 5,
+    "slug": "kebo",
+    "title": "KEBO",
+    "thumbnail": "/projects/KEBO_PROJECT-01.jpg",
+    "heightRatio": 1.7,
+    "images": [
+      "/projects/KEBO_PROJECT-01.jpg"
+    ],
+    "content": {
+      "description": "Kebo App is a 100k users app that allows you to track your spending and save money.",
+      "text": "The app allows you to track your spending and save money. It also allows you to create a budget and track your progress."
+    },
+    "textContrast": "light"
+  },
+  {
+    "id": 6,
+    "slug": "the-hackathon-company",
+    "title": "THE HACKATHON COMPANY",
+    "thumbnail": "/projects/THC-Brand01-01.png",
+    "heightRatio": 2.2,
+    "images": [
+      "/projects/THC-Brand01-01.png"
+    ],
+    "content": {
+      "description": "Retro poster design with vintage typography",
+      "text": "A vibrant design that captures the essence of retro aesthetics."
+    },
+    "textContrast": "light"
+  },
+  {
+    "id": 7,
+    "slug": "kebo",
+    "title": "KEBO",
+    "thumbnail": "/projects/KEBO_PROJECT-01.jpg",
+    "heightRatio": 1.7,
+    "images": [
+      "/projects/KEBO_PROJECT-01.jpg"
+    ],
+    "content": {
+      "description": "Kebo App is a 100k users app that allows you to track your spending and save money.",
+      "text": "The app allows you to track your spending and save money. It also allows you to create a budget and track your progress."
+    },
+    "textContrast": "light"
+  },
+  {
+    "id": 8,
+    "slug": "the-hackathon-company",
+    "title": "THE HACKATHON COMPANY",
+    "thumbnail": "/projects/THC-Brand01-01.png",
+    "heightRatio": 2.2,
+    "images": [
+      "/projects/THC-Brand01-01.png"
+    ],
+    "content": {
+      "description": "Retro poster design with vintage typography",
+      "text": "A vibrant design that captures the essence of retro aesthetics."
+    },
+    "textContrast": "light"
   }
 ]
 

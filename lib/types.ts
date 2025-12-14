@@ -20,6 +20,7 @@ export const ProjectSchema = z.object({
   heightRatio: z.number().min(0.1).max(3),
   images: z.array(ImagePathSchema).min(1, "At least one image is required"),
   content: ProjectContentSchema,
+  textContrast: z.enum(["light", "dark"]).optional().default("light"),
 })
 
 export const ProjectFormSchema = ProjectSchema.omit({ id: true })

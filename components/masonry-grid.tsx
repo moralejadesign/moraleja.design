@@ -78,11 +78,15 @@ export function MasonryGrid() {
           <Link
             key={project.id}
             href={`/project/${project.slug}`}
-            className="grid-item group relative mb-6 block w-full overflow-hidden rounded-lg bg-muted transition-all duration-300 hover:scale-[1.02] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+            className="grid-item group relative mb-6 block w-full overflow-visible transition-all duration-300 hover:scale-[1.02] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
             onMouseEnter={() => setHoveredId(project.id)}
             onMouseLeave={() => setHoveredId(null)}
           >
-            <div className="relative w-full overflow-hidden" style={{ height: `${project.heightRatio * 250}px` }}>
+            {/* Corner crosses - Geist style (diagonal: top-left & bottom-right only) */}
+            <span className="corner-cross top-left" aria-hidden="true" />
+            <span className="corner-cross bottom-right" aria-hidden="true" />
+            
+            <div className="card-border relative w-full overflow-hidden" style={{ height: `${project.heightRatio * 250}px` }}>
               <img
                 src={getBlobUrl(project.thumbnail) || "/placeholder.svg"}
                 alt={project.title}
@@ -101,12 +105,24 @@ export function MasonryGrid() {
               />
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-4 md:p-6">
-              <h2 className="text-sm font-semibold tracking-wide text-foreground md:text-base">{project.title}</h2>
-              <ArrowUpRight
-                className={`h-5 w-5 text-foreground transition-all duration-300 md:h-6 md:w-6 ${
-                  hoveredId === project.id ? "translate-x-1 -translate-y-1 opacity-100" : "opacity-60"
+            <div 
+              className={`absolute bottom-0 left-0 right-0 flex items-center justify-between p-4 md:p-6 ${
+                project.textContrast === "dark" 
+                  ? "bg-gradient-to-t from-white/80 to-transparent" 
+                  : "bg-gradient-to-t from-black/60 to-transparent"
+              }`}
+            >
+              <h2 
+                className={`text-sm font-semibold tracking-wide md:text-base ${
+                  project.textContrast === "dark" ? "text-gray-900" : "text-white"
                 }`}
+              >
+                {project.title}
+              </h2>
+              <ArrowUpRight
+                className={`h-5 w-5 transition-all duration-300 md:h-6 md:w-6 ${
+                  project.textContrast === "dark" ? "text-gray-900" : "text-white"
+                } ${hoveredId === project.id ? "translate-x-1 -translate-y-1 opacity-100" : "opacity-60"}`}
               />
             </div>
           </Link>
