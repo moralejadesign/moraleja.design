@@ -1,4 +1,4 @@
-# moraleja.co
+# [moraleja.design](https://moraleja.design)
 
 portfolio site for my design work.
 
