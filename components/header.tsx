@@ -3,9 +3,11 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { ThemeSwitcher } from "./theme-switcher"
+import { useHeaderStore } from "@/stores/header"
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
+  const { projectTitle, projectThumbnail, showProjectTitle } = useHeaderStore()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +17,8 @@ export function Header() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  const displayProjectTitle = projectTitle && showProjectTitle
 
   return (
     <header
@@ -27,18 +31,41 @@ export function Header() {
           isScrolled ? "h-14 md:h-16" : "h-16 md:h-20"
         }`}
       >
-        <Link
-          href="/"
-          className={`transition-all duration-300 ${
-            isScrolled ? "h-6 md:h-7" : "h-7 md:h-8"
-          }`}
-        >
-          <img
-            src="/brand_assets/MORALEJA_BRAND.svg"
-            alt="Moraleja"
-            className="h-full w-auto invert dark:invert-0"
-          />
-        </Link>
+        <div className="relative flex items-center">
+          <Link
+            href="/"
+            className={`transition-all duration-300 ${
+              displayProjectTitle ? "opacity-0 pointer-events-none" : "opacity-100"
+            } ${isScrolled ? "h-6 md:h-7" : "h-7 md:h-8"}`}
+          >
+            <img
+              src="/brand_assets/MORALEJA_BRAND.svg"
+              alt="Moraleja"
+              className="h-full w-auto invert dark:invert-0"
+            />
+          </Link>
+          
+          {projectTitle && (
+            <div
+              className={`absolute left-0 flex items-center gap-2 transition-all duration-300 ${
+                displayProjectTitle ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
+            >
+              {projectThumbnail && (
+                <div className="h-6 w-6 md:h-7 md:w-7 overflow-hidden rounded-sm flex-shrink-0">
+                  <img
+                    src={projectThumbnail}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+              <span className="text-sm font-semibold text-foreground truncate max-w-[160px] md:max-w-[260px]">
+                {projectTitle}
+              </span>
+            </div>
+          )}
+        </div>
 
         <nav className="flex items-center gap-6 md:gap-8">
           <Link

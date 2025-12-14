@@ -6,6 +6,8 @@ import { useEffect, useRef } from "react"
 import type { Project, BlockType } from "@/db/schema"
 import { ZoomTransition } from "@/components/zoom-transition"
 import { useTransitionStore } from "@/stores/transition"
+import { useHeaderStore } from "@/stores/header"
+import { getBlobUrl } from "@/lib/config"
 
 interface ProjectDetailProps {
   project: Project
@@ -85,14 +87,47 @@ function BlockRenderer({ block }: { block: BlockType }) {
 
 export function ProjectDetail({ project }: ProjectDetailProps) {
   const firstImageRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
   const setTargetPosition = useTransitionStore((state) => state.setTargetPosition)
   const clickedCard = useTransitionStore((state) => state.clickedCard)
   const phase = useTransitionStore((state) => state.phase)
+  
+  const { setProjectTitle, setProjectThumbnail, setShowProjectTitle, reset } = useHeaderStore()
 
   const blocks = (project.blocks as BlockType[]) || []
   const firstImageBlock = blocks.find(
     (b) => b.type === "full-image" || b.type === "two-column"
   )
+
+  // Set project title/thumbnail and handle cleanup
+  useEffect(() => {
+    setProjectTitle(project.title)
+    setProjectThumbnail(getBlobUrl(project.thumbnail) || null)
+    
+    return () => {
+      reset()
+    }
+  }, [project.title, project.thumbnail, setProjectTitle, setProjectThumbnail, reset])
+
+  // Track title visibility based on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!titleRef.current) return
+      
+      const titleRect = titleRef.current.getBoundingClientRect()
+      // Header height is roughly 64px (h-16) on desktop, 56px (h-14) when scrolled
+      const headerHeight = 64
+      
+      // Show project title in header when the title bottom edge passes behind the header
+      const titleBehindHeader = titleRect.bottom < headerHeight
+      setShowProjectTitle(titleBehindHeader)
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    handleScroll() // Check initial state
+    
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [setShowProjectTitle])
 
   useEffect(() => {
     if (clickedCard && firstImageRef.current) {
@@ -117,14 +152,17 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
       <div className="w-full px-4 py-12 md:px-8 lg:px-12">
         <Link
           href="/"
-          className="mb-8 inline-flex items-center gap-2 text-foreground transition-colors hover:text-foreground/80"
+          className="mb-8 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft className="h-5 w-5" />
-          <span>Back to projects</span>
+          <ArrowLeft className="h-3 w-3" />
+          <span>Back</span>
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+          <h1 
+            ref={titleRef}
+            className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl"
+          >
             {project.title}
           </h1>
         </div>
