@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://moraleja.co"),
+  metadataBase: new URL("https://moraleja.design"),
   title: {
     default: "Moraleja Design",
     template: "%s | Moraleja Design",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://moraleja.co",
+    url: "https://moraleja.design",
     siteName: "Moraleja Design",
     title: "Moraleja Design",
     description: "Creative studio shaping brands, visuals, and experiences.",
