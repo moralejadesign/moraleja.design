@@ -22,6 +22,13 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
         return;
       }
 
+      // Vercel serverless limit is ~4.5MB
+      const MAX_SIZE = 4.5 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        setError(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 4.5MB`);
+        return;
+      }
+
       setIsUploading(true);
       setError(null);
       setPreview(URL.createObjectURL(file));
@@ -34,6 +41,12 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
           method: "POST",
           body: formData,
         });
+
+        // Handle non-JSON responses (like Vercel's error pages)
+        const contentType = res.headers.get("content-type");
+        if (!contentType?.includes("application/json")) {
+          throw new Error(`Upload failed: Server returned ${res.status}. File may be too large.`);
+        }
 
         const data = await res.json();
         
@@ -211,6 +224,13 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
         return;
       }
 
+      // Vercel serverless limit is ~4.5MB
+      const MAX_SIZE = 4.5 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        setError(`Video too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 4.5MB. Compress your video first.`);
+        return;
+      }
+
       setIsUploading(true);
       setError(null);
       setPreview(URL.createObjectURL(file));
@@ -223,6 +243,12 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
           method: "POST",
           body: formData,
         });
+
+        // Handle non-JSON responses (like Vercel's error pages)
+        const contentType = res.headers.get("content-type");
+        if (!contentType?.includes("application/json")) {
+          throw new Error(`Upload failed: Server returned ${res.status}. File may be too large.`);
+        }
 
         const data = await res.json();
         
