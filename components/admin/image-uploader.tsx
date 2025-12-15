@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { Upload, X, Loader2, Video } from "lucide-react";
+import { upload } from "@vercel/blob/client";
 
 interface ImageUploaderProps {
   onUpload: (url: string) => void;
@@ -11,6 +12,7 @@ interface ImageUploaderProps {
 export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,39 +24,21 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
         return;
       }
 
-      // Vercel serverless limit is ~4.5MB
-      const MAX_SIZE = 4.5 * 1024 * 1024;
-      if (file.size > MAX_SIZE) {
-        setError(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 4.5MB`);
-        return;
-      }
-
       setIsUploading(true);
       setError(null);
+      setProgress(0);
       setPreview(URL.createObjectURL(file));
 
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload/client",
+          onUploadProgress: (e) => {
+            setProgress(e.percentage);
+          },
         });
 
-        // Handle non-JSON responses (like Vercel's error pages)
-        const contentType = res.headers.get("content-type");
-        if (!contentType?.includes("application/json")) {
-          throw new Error(`Upload failed: Server returned ${res.status}. File may be too large.`);
-        }
-
-        const data = await res.json();
-        
-        if (!res.ok) {
-          throw new Error(data.details || data.error || "Upload failed");
-        }
-
-        onUpload(data.url);
+        onUpload(blob.url);
         setPreview(null);
       } catch (error) {
         console.error("Upload error:", error);
@@ -62,6 +46,7 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
         setPreview(null);
       } finally {
         setIsUploading(false);
+        setProgress(0);
       }
     },
     [onUpload]
@@ -71,7 +56,6 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
-
       const file = e.dataTransfer.files[0];
       if (file) uploadFile(file);
     },
@@ -135,8 +119,9 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
             className="w-full h-full object-cover"
           />
           {isUploading && (
-            <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+            <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-2">
               <Loader2 className="h-8 w-8 animate-spin" />
+              <span className="text-sm text-muted-foreground">{progress}%</span>
             </div>
           )}
         </div>
@@ -213,6 +198,7 @@ interface VideoUploaderProps {
 export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -224,39 +210,28 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
         return;
       }
 
-      // Vercel serverless limit is ~4.5MB
-      const MAX_SIZE = 4.5 * 1024 * 1024;
+      // Max 500MB for client-side uploads
+      const MAX_SIZE = 500 * 1024 * 1024;
       if (file.size > MAX_SIZE) {
-        setError(`Video too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 4.5MB. Compress your video first.`);
+        setError(`Video too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 500MB.`);
         return;
       }
 
       setIsUploading(true);
       setError(null);
+      setProgress(0);
       setPreview(URL.createObjectURL(file));
 
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload/client",
+          onUploadProgress: (e) => {
+            setProgress(e.percentage);
+          },
         });
 
-        // Handle non-JSON responses (like Vercel's error pages)
-        const contentType = res.headers.get("content-type");
-        if (!contentType?.includes("application/json")) {
-          throw new Error(`Upload failed: Server returned ${res.status}. File may be too large.`);
-        }
-
-        const data = await res.json();
-        
-        if (!res.ok) {
-          throw new Error(data.details || data.error || "Upload failed");
-        }
-
-        onUpload(data.url);
+        onUpload(blob.url);
         setPreview(null);
       } catch (error) {
         console.error("Upload error:", error);
@@ -264,6 +239,7 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
         setPreview(null);
       } finally {
         setIsUploading(false);
+        setProgress(0);
       }
     },
     [onUpload]
@@ -273,7 +249,6 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
-
       const file = e.dataTransfer.files[0];
       if (file) uploadFile(file);
     },
@@ -320,8 +295,9 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
             playsInline
           />
           {isUploading && (
-            <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+            <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-2">
               <Loader2 className="h-8 w-8 animate-spin" />
+              <span className="text-sm text-muted-foreground">{progress}%</span>
             </div>
           )}
         </div>
@@ -337,7 +313,7 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
         >
           <Video className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            Drop video or click to upload
+            Drop video or click to upload (max 500MB)
           </p>
         </button>
       )}
