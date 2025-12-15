@@ -30,21 +30,58 @@ function BlockRenderer({ block }: { block: BlockType }) {
 
     case "two-column":
       return (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="relative aspect-video overflow-hidden rounded-lg">
+        <div className="grid grid-cols-2 gap-4 items-start">
+          <div className="relative overflow-hidden rounded-lg">
             <img
               src={block.left || "/placeholder.svg"}
               alt="Left image"
-              className="h-full w-full object-cover"
+              className="w-full h-auto"
             />
           </div>
-          <div className="relative aspect-video overflow-hidden rounded-lg">
+          <div className="relative overflow-hidden rounded-lg">
             <img
               src={block.right || "/placeholder.svg"}
               alt="Right image"
-              className="h-full w-full object-cover"
+              className="w-full h-auto"
             />
           </div>
+        </div>
+      )
+
+    case "image-text":
+      const ratioClasses = {
+        "50-50": "grid-cols-2",
+        "60-40": "grid-cols-[60fr_40fr]",
+        "40-60": "grid-cols-[40fr_60fr]",
+        "70-30": "grid-cols-[70fr_30fr]",
+        "30-70": "grid-cols-[30fr_70fr]",
+      }
+      return (
+        <div className={`grid ${ratioClasses[block.ratio]} gap-6 items-center`}>
+          <div className={`relative overflow-hidden rounded-lg ${block.imagePosition === "right" ? "order-2" : ""}`}>
+            <img
+              src={block.image || "/placeholder.svg"}
+              alt=""
+              className="w-full h-auto"
+            />
+          </div>
+          <div className={`prose prose-lg max-w-none ${block.imagePosition === "right" ? "order-1" : ""}`}>
+            <p className="text-foreground whitespace-pre-wrap">{block.text}</p>
+          </div>
+        </div>
+      )
+
+    case "video":
+      return (
+        <div className="relative w-full overflow-hidden rounded-lg">
+          <video
+            src={block.url}
+            className="w-full h-auto"
+            autoPlay={block.autoplay ?? true}
+            muted
+            loop
+            playsInline
+          />
         </div>
       )
 

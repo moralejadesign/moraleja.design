@@ -3,6 +3,8 @@ import { pgTable, serial, varchar, text, real, timestamp, jsonb, integer } from 
 export type BlockType = 
   | { type: "full-image"; url: string; alt?: string }
   | { type: "two-column"; left: string; right: string }
+  | { type: "image-text"; image: string; text: string; imagePosition: "left" | "right"; ratio: "50-50" | "60-40" | "40-60" | "70-30" | "30-70" }
+  | { type: "video"; url: string; autoplay?: boolean }
   | { type: "text"; content: string }
   | { type: "heading"; content: string; level: 1 | 2 | 3 }
   | { type: "quote"; content: string; author?: string };

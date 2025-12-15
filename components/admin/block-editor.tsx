@@ -12,9 +12,11 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
+  Video,
+  LayoutPanelLeft,
 } from "lucide-react";
 import type { BlockType } from "@/db/schema";
-import { ImageField, ImageUploader } from "./image-uploader";
+import { ImageField, ImageUploader, VideoField } from "./image-uploader";
 
 interface BlockEditorProps {
   blocks: BlockType[];
@@ -24,6 +26,8 @@ interface BlockEditorProps {
 const BLOCK_TYPES = [
   { type: "full-image", label: "Full Image", icon: Image },
   { type: "two-column", label: "Two Column", icon: Columns2 },
+  { type: "image-text", label: "Image + Text", icon: LayoutPanelLeft },
+  { type: "video", label: "Video", icon: Video },
   { type: "text", label: "Text", icon: Type },
   { type: "heading", label: "Heading", icon: Heading1 },
   { type: "quote", label: "Quote", icon: Quote },
@@ -41,6 +45,12 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
           break;
         case "two-column":
           newBlock = { type: "two-column", left: "", right: "" };
+          break;
+        case "image-text":
+          newBlock = { type: "image-text", image: "", text: "", imagePosition: "left", ratio: "50-50" };
+          break;
+        case "video":
+          newBlock = { type: "video", url: "", autoplay: true };
           break;
         case "text":
           newBlock = { type: "text", content: "" };
@@ -209,6 +219,79 @@ function BlockContent({ block, onChange }: BlockContentProps) {
               label="Right"
             />
           </div>
+        </div>
+      );
+
+    case "image-text":
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Image + Text
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={block.imagePosition}
+                onChange={(e) => onChange({ imagePosition: e.target.value as "left" | "right" })}
+                className="px-2 py-1 bg-muted/50 border border-border text-xs focus:outline-none"
+              >
+                <option value="left">Image Left</option>
+                <option value="right">Image Right</option>
+              </select>
+              <select
+                value={block.ratio}
+                onChange={(e) => onChange({ ratio: e.target.value as "50-50" | "60-40" | "40-60" | "70-30" | "30-70" })}
+                className="px-2 py-1 bg-muted/50 border border-border text-xs focus:outline-none"
+              >
+                <option value="50-50">50 / 50</option>
+                <option value="60-40">60 / 40</option>
+                <option value="40-60">40 / 60</option>
+                <option value="70-30">70 / 30</option>
+                <option value="30-70">30 / 70</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className={block.imagePosition === "right" ? "order-2" : ""}>
+              <ImageField
+                value={block.image}
+                onChange={(image) => onChange({ image })}
+                label="Image"
+              />
+            </div>
+            <div className={block.imagePosition === "right" ? "order-1" : ""}>
+              <label className="text-sm font-medium text-muted-foreground">Text</label>
+              <textarea
+                value={block.text}
+                onChange={(e) => onChange({ text: e.target.value })}
+                placeholder="Enter your text..."
+                rows={6}
+                className="w-full mt-2 px-3 py-2 bg-muted/50 border border-border text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 resize-none"
+              />
+            </div>
+          </div>
+        </div>
+      );
+
+    case "video":
+      return (
+        <div className="space-y-3">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Video
+          </div>
+          <VideoField
+            value={block.url}
+            onChange={(url) => onChange({ url })}
+          />
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={block.autoplay ?? true}
+              onChange={(e) => onChange({ autoplay: e.target.checked })}
+              className="rounded border-border"
+            />
+            Autoplay (muted, loops)
+          </label>
         </div>
       );
 
