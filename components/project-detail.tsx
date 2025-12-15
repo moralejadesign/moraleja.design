@@ -18,13 +18,11 @@ function BlockRenderer({ block }: { block: BlockType }) {
     case "full-image":
       return (
         <div className="relative w-full overflow-hidden rounded-lg">
-          <div className="relative aspect-video w-full">
-            <img
-              src={block.url || "/placeholder.svg"}
-              alt={block.alt || "Project image"}
-              className="h-full w-full object-cover"
-            />
-          </div>
+          <img
+            src={block.url || "/placeholder.svg"}
+            alt={block.alt || "Project image"}
+            className="w-full h-auto"
+          />
         </div>
       )
 
