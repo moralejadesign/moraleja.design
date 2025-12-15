@@ -4,8 +4,8 @@ export type BlockType =
   | { type: "full-image"; url: string; alt?: string }
   | { type: "two-column"; left: string; right: string }
   | { type: "image-text"; image: string; text: string; imagePosition: "left" | "right"; ratio: "50-50" | "60-40" | "40-60" | "70-30" | "30-70" }
-  | { type: "video"; url: string; autoplay?: boolean; muted?: boolean; aspectRatio?: "16:9" | "4:3" | "1:1" | "9:16" | "auto"; size?: "s" | "m" | "l" }
-  | { type: "video-row"; videos: { url: string; muted?: boolean }[]; columns: 2 | 3; aspectRatio?: "16:9" | "4:3" | "1:1" | "9:16"; autoplay?: boolean }
+  | { type: "video"; url: string; autoplay?: boolean; muted?: boolean; aspectRatio?: "16:9" | "4:3" | "1:1" | "9:16" | "4:5" | "auto"; size?: "s" | "m" | "l" }
+  | { type: "video-row"; videos: { url: string; muted?: boolean }[]; columns: 2 | 3; aspectRatio?: "16:9" | "4:3" | "1:1" | "9:16" | "4:5"; autoplay?: boolean }
   | { type: "text"; content: string }
   | { type: "heading"; content: string; level: 1 | 2 | 3 }
   | { type: "quote"; content: string; author?: string };

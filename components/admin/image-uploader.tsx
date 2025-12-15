@@ -12,16 +12,18 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = useCallback(
     async (file: File) => {
       if (!file.type.startsWith("image/")) {
-        alert("Please upload an image file");
+        setError("Please upload an image file");
         return;
       }
 
       setIsUploading(true);
+      setError(null);
       setPreview(URL.createObjectURL(file));
 
       try {
@@ -33,14 +35,17 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
           body: formData,
         });
 
-        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.details || data.error || "Upload failed");
+        }
 
-        const { url } = await res.json();
-        onUpload(url);
+        onUpload(data.url);
         setPreview(null);
       } catch (error) {
         console.error("Upload error:", error);
-        alert("Failed to upload image");
+        setError((error as Error).message || "Failed to upload image");
         setPreview(null);
       } finally {
         setIsUploading(false);
@@ -104,6 +109,11 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
         className="hidden"
       />
       
+      {error && (
+        <div className="mb-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive">
+          {error}
+        </div>
+      )}
       {preview ? (
         <div className="relative aspect-video overflow-hidden bg-muted">
           <img
@@ -120,7 +130,7 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
       ) : (
         <button
           type="button"
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => { setError(null); fileInputRef.current?.click(); }}
           className={`w-full aspect-video border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors ${
             isDragging
               ? "border-foreground bg-muted"
@@ -191,16 +201,18 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = useCallback(
     async (file: File) => {
       if (!file.type.startsWith("video/")) {
-        alert("Please upload a video file");
+        setError("Please upload a video file");
         return;
       }
 
       setIsUploading(true);
+      setError(null);
       setPreview(URL.createObjectURL(file));
 
       try {
@@ -212,14 +224,17 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
           body: formData,
         });
 
-        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.details || data.error || "Upload failed");
+        }
 
-        const { url } = await res.json();
-        onUpload(url);
+        onUpload(data.url);
         setPreview(null);
       } catch (error) {
         console.error("Upload error:", error);
-        alert("Failed to upload video");
+        setError((error as Error).message || "Failed to upload video");
         setPreview(null);
       } finally {
         setIsUploading(false);
@@ -265,6 +280,11 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
         className="hidden"
       />
       
+      {error && (
+        <div className="mb-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive">
+          {error}
+        </div>
+      )}
       {preview ? (
         <div className="relative aspect-video overflow-hidden bg-muted">
           <video
@@ -282,7 +302,7 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
       ) : (
         <button
           type="button"
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => { setError(null); fileInputRef.current?.click(); }}
           className={`w-full aspect-video border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors ${
             isDragging
               ? "border-foreground bg-muted"

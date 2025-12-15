@@ -78,6 +78,7 @@ function BlockRenderer({ block }: { block: BlockType }) {
       const videoAspectClasses = {
         "16:9": "aspect-video",
         "4:3": "aspect-[4/3]",
+        "4:5": "aspect-[4/5]",
         "1:1": "aspect-square",
         "9:16": "aspect-[9/16] max-w-xs mx-auto",
         "auto": "",
@@ -103,6 +104,7 @@ function BlockRenderer({ block }: { block: BlockType }) {
       const rowAspectClasses = {
         "16:9": "aspect-video",
         "4:3": "aspect-[4/3]",
+        "4:5": "aspect-[4/5]",
         "1:1": "aspect-square",
         "9:16": "aspect-[9/16]",
       }
