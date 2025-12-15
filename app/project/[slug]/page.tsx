@@ -4,6 +4,8 @@ import { Footer } from "@/components/footer"
 import { ProjectDetail } from "@/components/project-detail"
 import { getProjectBySlug } from "@/lib/projects"
 
+export const dynamic = "force-dynamic"
+
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const project = await getProjectBySlug(slug)
