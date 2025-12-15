@@ -70,16 +70,61 @@ function BlockRenderer({ block }: { block: BlockType }) {
       )
 
     case "video":
+      const videoSizeClasses = {
+        s: "max-w-md mx-auto",
+        m: "max-w-2xl mx-auto", 
+        l: "w-full",
+      }
+      const videoAspectClasses = {
+        "16:9": "aspect-video",
+        "4:3": "aspect-[4/3]",
+        "1:1": "aspect-square",
+        "9:16": "aspect-[9/16] max-w-xs mx-auto",
+        "auto": "",
+      }
+      const aspectRatio = block.aspectRatio ?? "16:9"
+      const size = block.size ?? "l"
+      if (!block.url) return null
       return (
-        <div className="relative w-full overflow-hidden rounded-lg">
+        <div className={`relative overflow-hidden rounded-lg ${videoSizeClasses[size]}`}>
           <video
             src={block.url}
-            className="w-full h-auto"
+            className={`w-full ${videoAspectClasses[aspectRatio]} ${aspectRatio === "auto" ? "h-auto" : "object-cover"}`}
             autoPlay={block.autoplay ?? true}
-            muted
+            muted={block.muted ?? true}
             loop
             playsInline
+            controls={!(block.muted ?? true)}
           />
+        </div>
+      )
+
+    case "video-row":
+      const rowAspectClasses = {
+        "16:9": "aspect-video",
+        "4:3": "aspect-[4/3]",
+        "1:1": "aspect-square",
+        "9:16": "aspect-[9/16]",
+      }
+      return (
+        <div className={`grid gap-4 ${block.columns === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+          {block.videos.map((video, idx) => (
+            <div key={idx} className="relative overflow-hidden rounded-lg">
+              {video.url ? (
+                <video
+                  src={video.url}
+                  className={`w-full ${rowAspectClasses[block.aspectRatio ?? "16:9"]} object-cover`}
+                  autoPlay={block.autoplay ?? false}
+                  muted={video.muted ?? true}
+                  loop
+                  playsInline
+                  controls={!(block.autoplay ?? false) || !(video.muted ?? true)}
+                />
+              ) : (
+                <div className={`w-full ${rowAspectClasses[block.aspectRatio ?? "16:9"]} bg-muted`} />
+              )}
+            </div>
+          ))}
         </div>
       )
 

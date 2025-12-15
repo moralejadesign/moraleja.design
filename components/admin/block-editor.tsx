@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Video,
   LayoutPanelLeft,
+  LayoutGrid,
 } from "lucide-react";
 import type { BlockType } from "@/db/schema";
 import { ImageField, ImageUploader, VideoField } from "./image-uploader";
@@ -28,6 +29,7 @@ const BLOCK_TYPES = [
   { type: "two-column", label: "Two Column", icon: Columns2 },
   { type: "image-text", label: "Image + Text", icon: LayoutPanelLeft },
   { type: "video", label: "Video", icon: Video },
+  { type: "video-row", label: "Video Row", icon: LayoutGrid },
   { type: "text", label: "Text", icon: Type },
   { type: "heading", label: "Heading", icon: Heading1 },
   { type: "quote", label: "Quote", icon: Quote },
@@ -50,7 +52,10 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
           newBlock = { type: "image-text", image: "", text: "", imagePosition: "left", ratio: "50-50" };
           break;
         case "video":
-          newBlock = { type: "video", url: "", autoplay: true };
+          newBlock = { type: "video", url: "", autoplay: true, muted: true, aspectRatio: "16:9", size: "l" };
+          break;
+        case "video-row":
+          newBlock = { type: "video-row", videos: [{ url: "", muted: true }, { url: "", muted: true }], columns: 2, aspectRatio: "16:9", autoplay: false };
           break;
         case "text":
           newBlock = { type: "text", content: "" };
@@ -276,22 +281,130 @@ function BlockContent({ block, onChange }: BlockContentProps) {
     case "video":
       return (
         <div className="space-y-3">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Video
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Video
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={block.aspectRatio ?? "16:9"}
+                onChange={(e) => onChange({ aspectRatio: e.target.value as "16:9" | "4:3" | "1:1" | "9:16" | "auto" })}
+                className="px-2 py-1 bg-muted/50 border border-border text-xs focus:outline-none"
+              >
+                <option value="16:9">16:9</option>
+                <option value="4:3">4:3</option>
+                <option value="1:1">1:1</option>
+                <option value="9:16">9:16</option>
+                <option value="auto">Auto</option>
+              </select>
+              <select
+                value={block.size ?? "l"}
+                onChange={(e) => onChange({ size: e.target.value as "s" | "m" | "l" })}
+                className="px-2 py-1 bg-muted/50 border border-border text-xs focus:outline-none"
+              >
+                <option value="s">Small</option>
+                <option value="m">Medium</option>
+                <option value="l">Large</option>
+              </select>
+            </div>
           </div>
           <VideoField
             value={block.url}
             onChange={(url) => onChange({ url })}
           />
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={block.autoplay ?? true}
+                onChange={(e) => onChange({ autoplay: e.target.checked })}
+                className="rounded border-border"
+              />
+              Autoplay
+            </label>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={block.muted ?? true}
+                onChange={(e) => onChange({ muted: e.target.checked })}
+                className="rounded border-border"
+              />
+              Muted
+            </label>
+          </div>
+        </div>
+      );
+
+    case "video-row":
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Video Row
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={block.columns}
+                onChange={(e) => {
+                  const cols = parseInt(e.target.value) as 2 | 3;
+                  const videos = [...block.videos];
+                  while (videos.length < cols) videos.push({ url: "", muted: true });
+                  while (videos.length > cols) videos.pop();
+                  onChange({ columns: cols, videos });
+                }}
+                className="px-2 py-1 bg-muted/50 border border-border text-xs focus:outline-none"
+              >
+                <option value={2}>2 Videos</option>
+                <option value={3}>3 Videos</option>
+              </select>
+              <select
+                value={block.aspectRatio ?? "16:9"}
+                onChange={(e) => onChange({ aspectRatio: e.target.value as "16:9" | "4:3" | "1:1" | "9:16" })}
+                className="px-2 py-1 bg-muted/50 border border-border text-xs focus:outline-none"
+              >
+                <option value="16:9">16:9</option>
+                <option value="4:3">4:3</option>
+                <option value="1:1">1:1</option>
+                <option value="9:16">9:16</option>
+              </select>
+            </div>
+          </div>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             <input
               type="checkbox"
-              checked={block.autoplay ?? true}
+              checked={block.autoplay ?? false}
               onChange={(e) => onChange({ autoplay: e.target.checked })}
               className="rounded border-border"
             />
-            Autoplay (muted, loops)
+            Autoplay all videos
           </label>
+          <div className={`grid gap-4 ${block.columns === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+            {block.videos.map((video, idx) => (
+              <div key={idx} className="space-y-2">
+                <VideoField
+                  value={video.url}
+                  onChange={(url) => {
+                    const videos = [...block.videos];
+                    videos[idx] = { ...videos[idx], url };
+                    onChange({ videos });
+                  }}
+                />
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={video.muted ?? true}
+                    onChange={(e) => {
+                      const videos = [...block.videos];
+                      videos[idx] = { ...videos[idx], muted: e.target.checked };
+                      onChange({ videos });
+                    }}
+                    className="rounded border-border"
+                  />
+                  Muted
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
       );
 
