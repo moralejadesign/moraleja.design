@@ -15,6 +15,7 @@
     "db:migrate-assets": "bun run scripts/migrate-blocks-to-assets.ts"
   },
   "dependencies": {
+    "@calcom/embed-react": "^1.5.3",
     "@clerk/nextjs": "^6.36.2",
     "@hookform/resolvers": "^3.10.0",
     "@neondatabase/serverless": "^1.0.2",

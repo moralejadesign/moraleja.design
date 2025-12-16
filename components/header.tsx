@@ -69,6 +69,12 @@ export function Header() {
 
         <nav className="flex items-center gap-6 md:gap-8">
           <Link
+            href="/"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:text-base"
+          >
+            Work
+          </Link>
+          <Link
             href="/gallery"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:text-base"
           >
