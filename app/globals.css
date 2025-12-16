@@ -258,3 +258,12 @@
     clip-path: polygon(130% 0, -30% 0, -15% 100%, 110% 115%);
   }
 }
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

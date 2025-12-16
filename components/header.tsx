@@ -69,10 +69,10 @@ export function Header() {
 
         <nav className="flex items-center gap-6 md:gap-8">
           <Link
-            href="/work"
+            href="/gallery"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:text-base"
           >
-            Work
+            Gallery
           </Link>
           <Link
             href="/about"

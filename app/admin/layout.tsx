@@ -21,6 +21,12 @@ export default function AdminLayout({
               >
                 Projects
               </Link>
+              <Link
+                href="/admin/assets"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Assets
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">

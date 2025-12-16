@@ -1,15 +1,39 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { Upload, X, Loader2, Video } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Upload, X, Loader2, Video, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { upload } from "@vercel/blob/client";
+import type { Asset } from "@/db/schema";
+import { TagSelector } from "./tag-selector";
+
+export type UploadResult = {
+  url: string;
+  assetId: number;
+  asset: Asset;
+};
+
+async function createAssetRecord(
+  url: string,
+  filename: string,
+  type: "image" | "video",
+  projectId?: number
+): Promise<Asset> {
+  const res = await fetch("/api/assets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, filename, type, projectId }),
+  });
+  if (!res.ok) throw new Error("Failed to create asset record");
+  return res.json();
+}
 
 interface ImageUploaderProps {
-  onUpload: (url: string) => void;
+  onUpload: (url: string, assetId?: number) => void;
+  projectId?: number;
   className?: string;
 }
 
-export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) {
+export function ImageUploader({ onUpload, projectId, className = "" }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -38,7 +62,9 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
           },
         });
 
-        onUpload(blob.url);
+        // Create asset record in database
+        const asset = await createAssetRecord(blob.url, file.name, "image", projectId);
+        onUpload(blob.url, asset.id);
         setPreview(null);
       } catch (error) {
         console.error("Upload error:", error);
@@ -49,7 +75,7 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
         setProgress(0);
       }
     },
-    [onUpload]
+    [onUpload, projectId]
   );
 
   const handleDrop = useCallback(
@@ -145,13 +171,143 @@ export function ImageUploader({ onUpload, className = "" }: ImageUploaderProps) 
   );
 }
 
-interface ImageFieldProps {
-  value: string;
-  onChange: (url: string) => void;
-  label?: string;
+// Inline metadata editor for assets
+interface InlineMetadataEditorProps {
+  assetUrl: string;
+  onUpdate?: () => void;
 }
 
-export function ImageField({ value, onChange, label }: ImageFieldProps) {
+function InlineMetadataEditor({ assetUrl, onUpdate }: InlineMetadataEditorProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [asset, setAsset] = useState<Asset | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    altText: "",
+    description: "",
+    tags: [] as string[],
+  });
+
+  useEffect(() => {
+    if (isOpen && !asset && assetUrl) {
+      setIsLoading(true);
+      // Fetch asset by URL
+      fetch(`/api/assets?url=${encodeURIComponent(assetUrl)}`)
+        .then((res) => res.json())
+        .then((assets: Asset[]) => {
+          const found = assets.find((a) => a.url === assetUrl);
+          if (found) {
+            setAsset(found);
+            setFormData({
+              title: found.title || "",
+              altText: found.altText || "",
+              description: found.description || "",
+              tags: found.tags || [],
+            });
+          }
+        })
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    }
+  }, [isOpen, asset, assetUrl]);
+
+  const handleSave = async () => {
+    if (!asset) return;
+    setIsSaving(true);
+    try {
+      await fetch(`/api/assets/${asset.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      setAsset({ ...asset, ...formData });
+      onUpdate?.();
+    } catch (error) {
+      console.error("Failed to save:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <Pencil className="h-3 w-3" />
+        Edit metadata
+        {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+      </button>
+
+      {isOpen && (
+        <div className="mt-2 p-3 bg-muted/30 border border-border space-y-3">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : asset ? (
+            <>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                placeholder="Title"
+                className="w-full px-2 py-1.5 bg-background border border-border text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20"
+              />
+              <input
+                type="text"
+                value={formData.altText}
+                onChange={(e) => setFormData((p) => ({ ...p, altText: e.target.value }))}
+                placeholder="Alt text (accessibility)"
+                className="w-full px-2 py-1.5 bg-background border border-border text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20"
+              />
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Description"
+                rows={2}
+                className="w-full px-2 py-1.5 bg-background border border-border text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 resize-none"
+              />
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5">Tags</label>
+                <TagSelector
+                  selectedTags={formData.tags}
+                  onChange={(tags) => setFormData((p) => ({ ...p, tags }))}
+                  compact
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-3 py-1.5 bg-foreground text-background text-xs hover:bg-foreground/90 disabled:opacity-50 flex items-center gap-1"
+              >
+                {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
+                Save metadata
+              </button>
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Asset not found in database. Upload a new image to create an asset record.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface ImageFieldProps {
+  value: string;
+  onChange: (url: string, assetId?: number) => void;
+  label?: string;
+  projectId?: number;
+}
+
+export function ImageField({ value, onChange, label, projectId }: ImageFieldProps) {
   if (value) {
     return (
       <div className="space-y-2">
@@ -174,6 +330,7 @@ export function ImageField({ value, onChange, label }: ImageFieldProps) {
             <X className="h-4 w-4" />
           </button>
         </div>
+        <InlineMetadataEditor assetUrl={value} />
       </div>
     );
   }
@@ -185,17 +342,18 @@ export function ImageField({ value, onChange, label }: ImageFieldProps) {
           {label}
         </label>
       )}
-      <ImageUploader onUpload={onChange} />
+      <ImageUploader onUpload={onChange} projectId={projectId} />
     </div>
   );
 }
 
 interface VideoUploaderProps {
-  onUpload: (url: string) => void;
+  onUpload: (url: string, assetId?: number) => void;
+  projectId?: number;
   className?: string;
 }
 
-export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) {
+export function VideoUploader({ onUpload, projectId, className = "" }: VideoUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -231,7 +389,9 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
           },
         });
 
-        onUpload(blob.url);
+        // Create asset record in database
+        const asset = await createAssetRecord(blob.url, file.name, "video", projectId);
+        onUpload(blob.url, asset.id);
         setPreview(null);
       } catch (error) {
         console.error("Upload error:", error);
@@ -242,7 +402,7 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
         setProgress(0);
       }
     },
-    [onUpload]
+    [onUpload, projectId]
   );
 
   const handleDrop = useCallback(
@@ -323,31 +483,35 @@ export function VideoUploader({ onUpload, className = "" }: VideoUploaderProps) 
 
 interface VideoFieldProps {
   value: string;
-  onChange: (url: string) => void;
+  onChange: (url: string, assetId?: number) => void;
+  projectId?: number;
 }
 
-export function VideoField({ value, onChange }: VideoFieldProps) {
+export function VideoField({ value, onChange, projectId }: VideoFieldProps) {
   if (value) {
     return (
-      <div className="relative group">
-        <video
-          src={value}
-          className="w-full aspect-video object-cover"
-          muted
-          playsInline
-          loop
-          autoPlay
-        />
-        <button
-          type="button"
-          onClick={() => onChange("")}
-          className="absolute top-2 right-2 p-1.5 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <X className="h-4 w-4" />
-        </button>
+      <div className="space-y-2">
+        <div className="relative group">
+          <video
+            src={value}
+            className="w-full aspect-video object-cover"
+            muted
+            playsInline
+            loop
+            autoPlay
+          />
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="absolute top-2 right-2 p-1.5 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <InlineMetadataEditor assetUrl={value} />
       </div>
     );
   }
 
-  return <VideoUploader onUpload={onChange} />;
+  return <VideoUploader onUpload={onChange} projectId={projectId} />;
 }

@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "bun run scripts/migrate-json-to-db.ts"
+    "db:seed": "bun run scripts/migrate-json-to-db.ts",
+    "db:migrate-assets": "bun run scripts/migrate-blocks-to-assets.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.2",

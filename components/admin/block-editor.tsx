@@ -194,7 +194,7 @@ function BlockContent({ block, onChange }: BlockContentProps) {
           </div>
           <ImageField
             value={block.url}
-            onChange={(url) => onChange({ url })}
+            onChange={(url, assetId) => onChange({ url, assetId })}
           />
           <input
             type="text"
@@ -215,12 +215,12 @@ function BlockContent({ block, onChange }: BlockContentProps) {
           <div className="grid grid-cols-2 gap-4">
             <ImageField
               value={block.left}
-              onChange={(left) => onChange({ left })}
+              onChange={(left, leftAssetId) => onChange({ left, leftAssetId })}
               label="Left"
             />
             <ImageField
               value={block.right}
-              onChange={(right) => onChange({ right })}
+              onChange={(right, rightAssetId) => onChange({ right, rightAssetId })}
               label="Right"
             />
           </div>
@@ -260,7 +260,7 @@ function BlockContent({ block, onChange }: BlockContentProps) {
             <div className={block.imagePosition === "right" ? "order-2" : ""}>
               <ImageField
                 value={block.image}
-                onChange={(image) => onChange({ image })}
+                onChange={(image, assetId) => onChange({ image, assetId })}
                 label="Image"
               />
             </div>
@@ -311,7 +311,7 @@ function BlockContent({ block, onChange }: BlockContentProps) {
           </div>
           <VideoField
             value={block.url}
-            onChange={(url) => onChange({ url })}
+            onChange={(url, assetId) => onChange({ url, assetId })}
           />
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -385,9 +385,9 @@ function BlockContent({ block, onChange }: BlockContentProps) {
               <div key={idx} className="space-y-2">
                 <VideoField
                   value={video.url}
-                  onChange={(url) => {
+                  onChange={(url, assetId) => {
                     const videos = [...block.videos];
-                    videos[idx] = { ...videos[idx], url };
+                    videos[idx] = { ...videos[idx], url, assetId };
                     onChange({ videos });
                   }}
                 />
