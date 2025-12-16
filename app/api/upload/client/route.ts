@@ -28,6 +28,7 @@ export async function POST(request: Request): Promise<NextResponse> {
             "video/quicktime",
             "video/x-msvideo",
           ],
+          allowOverwrites: true,
           tokenPayload: JSON.stringify({ userId }),
         };
       },
