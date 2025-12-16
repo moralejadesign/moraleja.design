@@ -1,5 +1,5 @@
 export const config = {
-  blobBaseUrl: "https://oi0bl4shqruqbuco.public.blob.vercel-storage.com",
+  blobBaseUrl: process.env.NEXT_PUBLIC_BLOB_BASE_URL || "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com",
 } as const
 
 export function getBlobUrl(path: string): string {

@@ -12,7 +12,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun run scripts/migrate-json-to-db.ts",
-    "db:migrate-assets": "bun run scripts/migrate-blocks-to-assets.ts"
+    "db:migrate-assets": "bun run scripts/migrate-blocks-to-assets.ts",
+    "db:migrate-blob": "bun run scripts/migrate-blob-storage.ts"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

@@ -1,10 +1,10 @@
+import "dotenv/config";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { projects, type BlockType } from "../db/schema";
 import projectsData from "../data/projects.json";
 
-// Load environment variables
-import "dotenv/config";
+const BLOB_BASE_URL = process.env.NEXT_PUBLIC_BLOB_BASE_URL || "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com";
 
 interface OldProject {
   id: number;
@@ -35,7 +35,7 @@ function convertToBlocks(oldProject: OldProject): BlockType[] {
   for (const image of oldProject.images) {
     // Convert local paths to blob URLs
     const url = image.startsWith("/")
-      ? `https://oi0bl4shqruqbuco.public.blob.vercel-storage.com${image}`
+      ? `${BLOB_BASE_URL}${image}`
       : image;
 
     blocks.push({
@@ -84,7 +84,7 @@ async function migrate() {
 
     // Convert thumbnail path to blob URL
     const thumbnail = oldProject.thumbnail.startsWith("/")
-      ? `https://oi0bl4shqruqbuco.public.blob.vercel-storage.com${oldProject.thumbnail}`
+      ? `${BLOB_BASE_URL}${oldProject.thumbnail}`
       : oldProject.thumbnail;
 
     try {
