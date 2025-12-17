@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   X,
@@ -201,31 +202,29 @@ export function ImageViewer({
                 onLoadedData={() => setIsLoaded(true)}
               />
             ) : (
-              <>
-                {/* Blur placeholder - shows immediately with cached thumbnail */}
-                <img
-                  src={asset.url}
-                  alt=""
-                  aria-hidden="true"
-                  className={`absolute inset-0 max-h-[70vh] max-w-full object-contain blur-xl scale-105 transition-opacity duration-300 ${
-                    isLoaded ? "opacity-0" : "opacity-50"
+              <div className="relative max-h-[70vh] max-w-[85vw]">
+                {/* Loading placeholder */}
+                <div
+                  className={`absolute inset-0 bg-white/5 backdrop-blur-sm transition-opacity duration-300 ${
+                    isLoaded ? "opacity-0 pointer-events-none" : "opacity-100"
                   }`}
-                  style={{ filter: "blur(20px)" }}
                 />
-                {/* Main image */}
-                <img
+                {/* Main image with Next.js optimization */}
+                <Image
                   key={asset.id}
                   src={asset.url}
                   alt={asset.altText || asset.title || "Gallery image"}
-                  className={`max-h-[70vh] max-w-full object-contain transition-opacity duration-200 ${
+                  width={1920}
+                  height={1080}
+                  sizes="85vw"
+                  quality={90}
+                  priority
+                  className={`max-h-[70vh] w-auto h-auto object-contain transition-opacity duration-200 ${
                     isLoaded ? "opacity-100" : "opacity-0"
                   }`}
-                  loading="eager"
-                  decoding="async"
-                  fetchPriority="high"
                   onLoad={handleImageLoad}
                 />
-              </>
+              </div>
             )}
 
             {/* Loading indicator */}

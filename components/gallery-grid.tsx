@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { Search, X, Image as ImageIcon, Video } from "lucide-react";
+import { useState, useMemo, useEffect, useCallback, memo } from "react";
+import { Search, X, Image as ImageIcon, Video, Loader2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import type Masonry from "masonry-layout";
+import { useSearchParams } from "next/navigation";
 import { PREDEFINED_TAGS, normalizeTag } from "@/lib/tags";
 import { ImageViewer } from "@/components/image-viewer";
 import { markImageCached } from "@/lib/image-cache";
+import { MasonryGrid, MasonryCard, useMasonryCardContext } from "@/components/masonry";
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import { imageSizes } from "@/components/optimized-image";
 
 type GalleryAsset = {
   id: number;
@@ -25,56 +28,83 @@ type GalleryAsset = {
 interface GalleryGridProps {
   assets: GalleryAsset[];
   availableTags: string[];
+  /** Items per page for infinite scroll. Set to 0 to disable pagination. */
+  pageSize?: number;
 }
 
-export function GalleryGrid({ assets, availableTags }: GalleryGridProps) {
-  const router = useRouter();
+export function GalleryGrid({ assets, availableTags, pageSize = 9 }: GalleryGridProps) {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [typeFilter, setTypeFilter] = useState<"all" | "image" | "video">("all");
+  const [isMobile, setIsMobile] = useState(false);
   
-  // Image viewer state from URL
-  const viewingId = searchParams.get("photo");
-  const selectedAsset = viewingId
-    ? assets.find((a) => a.id === parseInt(viewingId, 10))
+  // Local state for lightbox - prevents re-renders on URL change
+  const [viewingAssetId, setViewingAssetId] = useState<number | null>(() => {
+    const photoParam = searchParams.get("photo");
+    return photoParam ? parseInt(photoParam, 10) : null;
+  });
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Sync URL to local state on initial load and popstate (back/forward)
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const photoId = params.get("photo");
+      setViewingAssetId(photoId ? parseInt(photoId, 10) : null);
+    };
+    
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const selectedAsset = viewingAssetId
+    ? assets.find((a) => a.id === viewingAssetId)
     : null;
 
-  const openViewer = useCallback(
-    (assetId: number) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("photo", assetId.toString());
-      router.push(`/gallery?${params.toString()}`, { scroll: false });
-    },
-    [router, searchParams]
-  );
+  // Update URL without triggering React navigation (no re-render)
+  const updateUrl = useCallback((photoId: number | null) => {
+    const params = new URLSearchParams(window.location.search);
+    if (photoId) {
+      params.set("photo", photoId.toString());
+    } else {
+      params.delete("photo");
+    }
+    const queryString = params.toString();
+    const newUrl = queryString ? `/gallery?${queryString}` : "/gallery";
+    window.history.pushState(null, "", newUrl);
+  }, []);
+
+  const openViewer = useCallback((assetId: number) => {
+    setViewingAssetId(assetId);
+    updateUrl(assetId);
+  }, [updateUrl]);
 
   const closeViewer = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("photo");
-    const queryString = params.toString();
-    router.push(queryString ? `/gallery?${queryString}` : "/gallery", {
-      scroll: false,
-    });
-  }, [router, searchParams]);
+    setViewingAssetId(null);
+    updateUrl(null);
+  }, [updateUrl]);
 
-  const navigateViewer = useCallback(
-    (assetId: number) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("photo", assetId.toString());
-      router.replace(`/gallery?${params.toString()}`, { scroll: false });
-    },
-    [router, searchParams]
-  );
+  const navigateViewer = useCallback((assetId: number) => {
+    setViewingAssetId(assetId);
+    // Use replaceState for navigation within lightbox (no history entry)
+    const params = new URLSearchParams(window.location.search);
+    params.set("photo", assetId.toString());
+    window.history.replaceState(null, "", `/gallery?${params.toString()}`);
+  }, []);
 
   const filteredAssets = useMemo(() => {
     return assets.filter((asset) => {
-      // Type filter
       if (typeFilter !== "all" && asset.type !== typeFilter) {
         return false;
       }
 
-      // Tag filter (case-insensitive)
       if (selectedTags.length > 0) {
         const assetTags = (asset.tags || []).map(normalizeTag);
         const hasMatchingTag = selectedTags.some((tag) =>
@@ -83,7 +113,6 @@ export function GalleryGrid({ assets, availableTags }: GalleryGridProps) {
         if (!hasMatchingTag) return false;
       }
 
-      // Search filter
       if (search) {
         const searchLower = search.toLowerCase();
         const matchesTitle = asset.title?.toLowerCase().includes(searchLower);
@@ -100,6 +129,18 @@ export function GalleryGrid({ assets, availableTags }: GalleryGridProps) {
       return true;
     });
   }, [assets, search, selectedTags, typeFilter]);
+
+  // Infinite scroll pagination
+  const {
+    visibleItems,
+    hasMore,
+    isLoading,
+    sentinelRef,
+  } = useInfiniteScroll({
+    items: filteredAssets,
+    pageSize,
+    enabled: pageSize > 0,
+  });
 
   const toggleTag = (tag: string) => {
     const normalized = normalizeTag(tag);
@@ -232,9 +273,13 @@ export function GalleryGrid({ assets, availableTags }: GalleryGridProps) {
         )}
       </div>
 
-      {/* Results Count - More subtle */}
+      {/* Results Count */}
       <div className="text-xs text-muted-foreground/60 font-mono">
-        {filteredAssets.length}{hasActiveFilters ? ` / ${assets.length}` : ""} {filteredAssets.length === 1 ? "item" : "items"}
+        {pageSize > 0 && hasMore ? (
+          <>{visibleItems.length} of {filteredAssets.length}{hasActiveFilters ? ` (${assets.length} total)` : ""}</>
+        ) : (
+          <>{filteredAssets.length}{hasActiveFilters ? ` / ${assets.length}` : ""} {filteredAssets.length === 1 ? "item" : "items"}</>
+        )}
       </div>
 
       {/* Masonry Grid */}
@@ -251,7 +296,35 @@ export function GalleryGrid({ assets, availableTags }: GalleryGridProps) {
           )}
         </div>
       ) : (
-        <GalleryMasonryGrid assets={filteredAssets} onAssetClick={openViewer} />
+        <>
+          <MasonryGrid>
+            {visibleItems.map((asset) => (
+              <AssetCard
+                key={asset.id}
+                asset={asset}
+                isMobile={isMobile}
+                onClick={() => openViewer(asset.id)}
+              />
+            ))}
+          </MasonryGrid>
+
+          {/* Infinite scroll sentinel */}
+          {pageSize > 0 && (
+            <div
+              ref={sentinelRef}
+              className="flex justify-center py-8"
+            >
+              {isLoading && (
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              )}
+              {!hasMore && filteredAssets.length > pageSize && (
+                <span className="text-xs text-muted-foreground/50">
+                  All {filteredAssets.length} items loaded
+                </span>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* Image Viewer */}
@@ -267,173 +340,39 @@ export function GalleryGrid({ assets, availableTags }: GalleryGridProps) {
   );
 }
 
-interface GalleryMasonryGridProps {
-  assets: GalleryAsset[];
-  onAssetClick: (id: number) => void;
-}
-
-function GalleryMasonryGrid({ assets, onAssetClick }: GalleryMasonryGridProps) {
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sizerRef = useRef<HTMLDivElement>(null);
-  const masonryRef = useRef<Masonry | null>(null);
-
-  const relayout = useCallback(() => {
-    if (masonryRef.current && typeof masonryRef.current.layout === "function") {
-      masonryRef.current.layout();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!containerRef.current || !sizerRef.current) return;
-
-    let masonryInstance: Masonry | null = null;
-
-    const getGutter = () => {
-      if (typeof window === "undefined") return 16;
-      return window.innerWidth >= 768 ? 24 : 16;
-    };
-
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-    };
-
-    const initMasonry = async () => {
-      const MasonryModule = await import("masonry-layout");
-      const MasonryClass = MasonryModule.default;
-
-      const instance = new MasonryClass(containerRef.current!, {
-        itemSelector: ".gallery-item",
-        columnWidth: sizerRef.current,
-        gutter: getGutter(),
-        percentPosition: true,
-        transitionDuration: 0,
-      });
-
-      masonryInstance = instance;
-      masonryRef.current = instance;
-      if (instance && typeof instance.layout === "function") {
-        instance.layout();
-      }
-
-      checkMobile();
-      requestAnimationFrame(() => {
-        setIsReady(true);
-      });
-    };
-
-    initMasonry();
-
-    const handleResize = () => {
-      checkMobile();
-      if (masonryRef.current) {
-        (masonryRef.current as Masonry & { options: { gutter: number } }).options.gutter = getGutter();
-        if (typeof masonryRef.current.layout === "function") {
-          masonryRef.current.layout();
-        }
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (masonryInstance && typeof masonryInstance.destroy === "function") {
-        masonryInstance.destroy();
-      }
-      masonryRef.current = null;
-    };
-  }, [assets]);
-
-  useEffect(() => {
-    relayout();
-  }, [isMobile, relayout, assets]);
-
-  return (
-    <div
-      ref={containerRef}
-      className={`masonry-container transition-opacity duration-300 ${isReady ? "opacity-100" : "opacity-0"}`}
-    >
-      <div
-        ref={sizerRef}
-        className="gallery-sizer invisible absolute w-[calc(50%-8px)] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
-      />
-      {assets.map((asset) => (
-        <AssetCard
-          key={asset.id}
-          asset={asset}
-          isMobile={isMobile}
-          isHovered={hoveredId === asset.id}
-          onHover={(hovered) => setHoveredId(hovered ? asset.id : null)}
-          onImageLoad={relayout}
-          onClick={() => onAssetClick(asset.id)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function AnimatedNumber({ value, isVisible }: { value: number; isVisible: boolean }) {
-  const [displayValue, setDisplayValue] = useState(0);
-
-  useEffect(() => {
-    if (!isVisible) {
-      setDisplayValue(0);
-      return;
-    }
-
-    const duration = 400;
-    const steps = 20;
-    const increment = value / steps;
-    let current = 0;
-
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= value) {
-        setDisplayValue(value);
-        clearInterval(timer);
-      } else {
-        setDisplayValue(Math.round(current));
-      }
-    }, duration / steps);
-
-    return () => clearInterval(timer);
-  }, [value, isVisible]);
-
-  return <span>{displayValue}</span>;
-}
-
 interface AssetCardProps {
   asset: GalleryAsset;
   isMobile: boolean;
-  isHovered: boolean;
-  onHover: (hovered: boolean) => void;
-  onImageLoad: () => void;
   onClick: () => void;
 }
 
-function AssetCard({ asset, isMobile, isHovered, onHover, onImageLoad, onClick }: AssetCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Random height ratio between 1.0 and 1.8 for variety, seeded by asset id
+// Memoized to prevent re-renders when lightbox state changes
+const AssetCard = memo(function AssetCard({ asset, isMobile, onClick }: AssetCardProps) {
+  // Deterministic height ratio based on asset id for visual variety
   const heightRatio = 1.0 + ((asset.id * 7) % 9) / 10;
   const cardHeight = Math.round(heightRatio * (isMobile ? 150 : 250));
 
-  useEffect(() => {
-    if (isHovered && cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      setDimensions({ width: Math.round(rect.width), height: Math.round(rect.height) });
-    }
-  }, [isHovered]);
+  return (
+    <MasonryCard
+      height={cardHeight}
+      onClick={onClick}
+      ariaLabel={asset.title || "View asset"}
+    >
+      <AssetCardContent asset={asset} />
+    </MasonryCard>
+  );
+});
+
+interface AssetCardContentProps {
+  asset: GalleryAsset;
+}
+
+function AssetCardContent({ asset }: AssetCardContentProps) {
+  const { isHovered, onImageLoad } = useMasonryCardContext();
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const handleLoad = () => {
     setIsLoaded(true);
-    // Mark image as cached so lightbox can use it instantly
     if (asset.type === "image") {
       markImageCached(asset.url);
     }
@@ -441,85 +380,51 @@ function AssetCard({ asset, isMobile, isHovered, onHover, onImageLoad, onClick }
   };
 
   return (
-    <div
-      ref={cardRef}
-      className="gallery-item group relative mb-4 block w-[calc(50%-8px)] cursor-pointer overflow-visible transition-all duration-300 hover:scale-[1.02] md:mb-6 md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
-      onMouseEnter={() => onHover(true)}
-      onMouseLeave={() => onHover(false)}
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-    >
-      {/* Corner crosses - Geist style */}
-      <span className="corner-cross top-left" aria-hidden="true" />
-      <span className="corner-cross bottom-right" aria-hidden="true" />
-
-      {/* Dimension labels - Figma style */}
-      <span
-        className={`absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[10px] text-muted-foreground/50 transition-all duration-300 ${
-          isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-        }`}
-        aria-hidden="true"
-      >
-        <AnimatedNumber value={dimensions.width} isVisible={isHovered} />
-      </span>
-      <span
-        className={`absolute -right-4 top-1/2 -translate-y-1/2 rotate-90 font-mono text-[10px] text-muted-foreground/50 transition-all duration-300 ${
-          isHovered ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-1"
-        }`}
-        aria-hidden="true"
-      >
-        <AnimatedNumber value={dimensions.height} isVisible={isHovered} />
-      </span>
-
-      <div className="card-border relative w-full overflow-hidden" style={{ height: `${cardHeight}px` }}>
-        {asset.type === "video" ? (
-          <video
-            src={asset.url}
-            className={`h-full w-full object-cover transition-all duration-500 ${
-              isLoaded ? "opacity-100" : "opacity-0"
-            } group-hover:scale-110`}
-            muted
-            loop
-            playsInline
-            onLoadedData={handleLoad}
-            onMouseEnter={(e) => e.currentTarget.play()}
-            onMouseLeave={(e) => {
-              e.currentTarget.pause();
-              e.currentTarget.currentTime = 0;
-            }}
-          />
-        ) : (
-          <img
-            src={asset.url}
-            alt={asset.altText || asset.title || "Gallery image"}
-            className={`h-full w-full object-cover transition-all duration-500 ${
-              isLoaded ? "opacity-100" : "opacity-0"
-            } group-hover:scale-110`}
-            onLoad={handleLoad}
-          />
-        )}
-
-        {/* Loading skeleton */}
-        {!isLoaded && <div className="absolute inset-0 bg-muted animate-pulse" />}
-
-        {/* Hover overlay */}
-        <div
-          className={`absolute inset-0 bg-black/0 transition-all duration-300 ${
-            isHovered ? "bg-black/20" : ""
-          }`}
+    <>
+      {asset.type === "video" ? (
+        <video
+          src={asset.url}
+          className={`h-full w-full object-cover transition-all duration-700 ease-out ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          } group-hover:scale-[1.03]`}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onLoadedData={handleLoad}
+          onMouseEnter={(e) => e.currentTarget.play()}
+          onMouseLeave={(e) => {
+            e.currentTarget.pause();
+            e.currentTarget.currentTime = 0;
+          }}
         />
+      ) : (
+        <Image
+          src={asset.url}
+          alt={asset.altText || asset.title || "Gallery image"}
+          fill
+          sizes={imageSizes.masonry}
+          quality={80}
+          className={`object-cover transition-all duration-700 ease-out ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          } group-hover:scale-[1.03]`}
+          onLoad={handleLoad}
+        />
+      )}
 
-        {/* Type indicator */}
-        <div className="absolute top-2 right-2 p-1 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-          {asset.type === "video" ? <Video className="h-3 w-3" /> : <ImageIcon className="h-3 w-3" />}
-        </div>
+      {/* Loading skeleton */}
+      {!isLoaded && <div className="absolute inset-0 bg-muted animate-pulse" />}
+
+      {/* Subtle hover overlay */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-500 ease-out ${
+          isHovered ? "bg-white/5" : "bg-transparent"
+        }`}
+      />
+
+      {/* Type indicator */}
+      <div className="absolute top-2 right-2 p-1 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+        {asset.type === "video" ? <Video className="h-3 w-3" /> : <ImageIcon className="h-3 w-3" />}
       </div>
 
       {/* Info overlay at bottom */}
@@ -555,7 +460,6 @@ function AssetCard({ asset, isMobile, isHovered, onHover, onImageLoad, onClick }
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }
-

@@ -55,19 +55,18 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction="right">
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/20 backdrop-blur-[2px]" />
         <Drawer.Content
-          className="fixed right-0 top-0 bottom-0 z-50 flex w-[280px] flex-col bg-background outline-none"
+          className="fixed right-0 top-0 bottom-0 z-50 flex w-[260px] flex-col bg-background border-l border-border outline-none"
           aria-describedby={undefined}
         >
           <Drawer.Title className="sr-only">Navigation menu</Drawer.Title>
           
           {/* Header with close button */}
-          <div className="flex h-16 items-center justify-between border-b border-border px-4">
-            <span className="text-sm font-medium text-muted-foreground">Menu</span>
+          <div className="flex h-16 items-center justify-end px-4">
             <button
               onClick={() => onOpenChange(false)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Close menu"
             >
               <CloseIcon />
@@ -75,7 +74,7 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
           </div>
 
           {/* Navigation links */}
-          <nav className="flex flex-1 flex-col gap-1 p-4">
+          <nav className="flex flex-1 flex-col px-6 py-4">
             {navLinks.map((link) => {
               const isActive = pathname === link.href || 
                 (link.href !== "/" && pathname.startsWith(link.href))
@@ -85,12 +84,15 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
                   key={link.href}
                   href={link.href}
                   onClick={() => onOpenChange(false)}
-                  className={`flex items-center rounded-lg px-4 py-3 text-base font-medium transition-colors border-l-2 ${
+                  className={`group relative flex items-center py-3 text-sm font-medium tracking-wide transition-colors ${
                     isActive
-                      ? "border-foreground bg-secondary text-foreground"
-                      : "border-transparent text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-1 h-1 rounded-full bg-brand-accent" />
+                  )}
                   {link.label}
                 </Link>
               )
@@ -98,9 +100,9 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
           </nav>
 
           {/* Footer with theme switcher */}
-          <div className="border-t border-border p-4">
+          <div className="px-6 py-4 border-t border-border">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Theme</span>
+              <span className="text-xs text-muted-foreground/60 font-mono uppercase tracking-wider">Theme</span>
               <ThemeSwitcher />
             </div>
           </div>
@@ -114,7 +116,7 @@ export function MobileMenuTrigger({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
+      className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground md:hidden"
       aria-label="Open menu"
     >
       <MenuIcon />

@@ -1,26 +1,34 @@
 "use client"
 
 import { ArrowLeft } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useLayoutEffect } from "react"
 import type { Project, BlockType } from "@/db/schema"
 import { ZoomTransition } from "@/components/zoom-transition"
 import { useTransitionStore } from "@/stores/transition"
 import { useHeaderStore } from "@/stores/header"
 import { getBlobUrl } from "@/lib/config"
 
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect
+
 interface ProjectDetailProps {
   project: Project
 }
 
-function BlockRenderer({ block }: { block: BlockType }) {
+function BlockRenderer({ block, priority = false }: { block: BlockType; priority?: boolean }) {
   switch (block.type) {
     case "full-image":
       return (
         <div className="relative w-full overflow-hidden rounded-lg">
-          <img
+          <Image
             src={block.url || "/placeholder.svg"}
             alt={block.alt || "Project image"}
+            width={1920}
+            height={1080}
+            sizes="(max-width: 768px) 100vw, 80vw"
+            quality={85}
+            priority={priority}
             className="w-full h-auto"
           />
         </div>
@@ -30,16 +38,25 @@ function BlockRenderer({ block }: { block: BlockType }) {
       return (
         <div className="grid grid-cols-2 gap-4 items-start">
           <div className="relative overflow-hidden rounded-lg">
-            <img
+            <Image
               src={block.left || "/placeholder.svg"}
               alt="Left image"
+              width={960}
+              height={720}
+              sizes="(max-width: 768px) 50vw, 40vw"
+              quality={85}
+              priority={priority}
               className="w-full h-auto"
             />
           </div>
           <div className="relative overflow-hidden rounded-lg">
-            <img
+            <Image
               src={block.right || "/placeholder.svg"}
               alt="Right image"
+              width={960}
+              height={720}
+              sizes="(max-width: 768px) 50vw, 40vw"
+              quality={85}
               className="w-full h-auto"
             />
           </div>
@@ -57,9 +74,13 @@ function BlockRenderer({ block }: { block: BlockType }) {
       return (
         <div className={`grid ${ratioClasses[block.ratio]} gap-6 items-center`}>
           <div className={`relative overflow-hidden rounded-lg ${block.imagePosition === "right" ? "order-2" : ""}`}>
-            <img
+            <Image
               src={block.image || "/placeholder.svg"}
               alt=""
+              width={960}
+              height={720}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              quality={85}
               className="w-full h-auto"
             />
           </div>
@@ -172,7 +193,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const setTargetPosition = useTransitionStore((state) => state.setTargetPosition)
   const clickedCard = useTransitionStore((state) => state.clickedCard)
-  const phase = useTransitionStore((state) => state.phase)
+  const isAnimating = useTransitionStore((state) => state.isAnimating)
   
   const { setProjectTitle, setProjectThumbnail, setShowProjectTitle, reset } = useHeaderStore()
 
@@ -197,37 +218,32 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
       if (!titleRef.current) return
       
       const titleRect = titleRef.current.getBoundingClientRect()
-      // Header height is roughly 64px (h-16) on desktop, 56px (h-14) when scrolled
       const headerHeight = 64
-      
-      // Show project title in header when the title bottom edge passes behind the header
       const titleBehindHeader = titleRect.bottom < headerHeight
       setShowProjectTitle(titleBehindHeader)
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
-    handleScroll() // Check initial state
+    handleScroll()
     
     return () => window.removeEventListener("scroll", handleScroll)
   }, [setShowProjectTitle])
 
-  useEffect(() => {
+  // Set target position for animation immediately on mount
+  useIsomorphicLayoutEffect(() => {
     if (clickedCard && firstImageRef.current) {
-      requestAnimationFrame(() => {
-        if (firstImageRef.current) {
-          const rect = firstImageRef.current.getBoundingClientRect()
-          setTargetPosition({
-            x: rect.left,
-            y: rect.top,
-            width: rect.width,
-            height: rect.height,
-          })
-        }
+      const rect = firstImageRef.current.getBoundingClientRect()
+      setTargetPosition({
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
       })
     }
   }, [clickedCard, setTargetPosition])
 
-  const isFirstImageVisible = !clickedCard || phase === "zoom-out" || phase === "idle"
+  // Hide first image only while animation overlay is visible
+  const isFirstImageVisible = !isAnimating
 
   return (
     <ZoomTransition>
@@ -266,7 +282,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
                 ref={isFirstImage ? firstImageRef : undefined}
                 style={isFirstImage ? { opacity: isFirstImageVisible ? 1 : 0 } : undefined}
               >
-                <BlockRenderer block={block} />
+                <BlockRenderer block={block} priority={isFirstImage} />
               </div>
             )
           })}

@@ -89,13 +89,13 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative text-base font-medium transition-colors hover:text-foreground ${
+                  className={`relative text-sm font-medium tracking-wide transition-colors hover:text-foreground ${
                     isActive ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
                   {link.label}
                   {isActive && (
-                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-foreground" />
+                    <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-brand-accent" />
                   )}
                 </Link>
               )

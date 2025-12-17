@@ -20,18 +20,20 @@ interface TargetPosition {
 interface TransitionState {
   clickedCard: CardPosition | null;
   targetPosition: TargetPosition | null;
-  phase: "idle" | "zoom-in" | "zoom-out";
+  isAnimating: boolean;
   setClickedCard: (position: CardPosition | null) => void;
   setTargetPosition: (position: TargetPosition | null) => void;
-  setPhase: (phase: "idle" | "zoom-in" | "zoom-out") => void;
+  setAnimating: (animating: boolean) => void;
+  reset: () => void;
 }
 
 export const useTransitionStore = create<TransitionState>((set) => ({
   clickedCard: null,
   targetPosition: null,
-  phase: "idle",
-  setClickedCard: (position) => set({ clickedCard: position }),
+  isAnimating: false,
+  setClickedCard: (position) => set({ clickedCard: position, isAnimating: !!position }),
   setTargetPosition: (position) => set({ targetPosition: position }),
-  setPhase: (phase) => set({ phase }),
+  setAnimating: (animating) => set({ isAnimating: animating }),
+  reset: () => set({ clickedCard: null, targetPosition: null, isAnimating: false }),
 }));
 

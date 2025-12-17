@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Image from "next/image";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ArrowUpRight } from "lucide-react";
@@ -37,10 +38,14 @@ export default function AboutPage() {
                   </span>
                   
                   <div className="card-border relative aspect-[4/5] w-full overflow-hidden">
-                    <img
+                    <Image
                       src={`${config.blobBaseUrl}/moraleja_picture.png`}
                       alt="Aleja, founder of Moraleja Design"
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      quality={90}
+                      priority
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     
                     {/* Subtle overlay gradient for light image */}

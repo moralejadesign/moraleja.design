@@ -6,6 +6,7 @@ import "./globals.css";
 import { ThemeScript } from "@/components/theme-script";
 import { ThemeProvider } from "@/providers/theme";
 import { QueryProvider } from "@/providers/query";
+import { config } from "@/lib/config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -78,6 +79,16 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <head>
           <ThemeScript />
+          {/* Preconnect to image CDN for faster loading */}
+          <link
+            rel="preconnect"
+            href={config.blobBaseUrl}
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="dns-prefetch"
+            href={config.blobBaseUrl}
+          />
         </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
