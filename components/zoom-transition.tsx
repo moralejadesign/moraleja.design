@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTransitionStore } from "@/stores/transition"
 
@@ -18,11 +18,16 @@ export function ZoomTransition({ children }: ZoomTransitionProps) {
   const [showOverlay, setShowOverlay] = useState(false)
   const animationRef = useRef<number | null>(null)
 
+  // useLayoutEffect runs synchronously before paint, preventing flicker
+  useLayoutEffect(() => {
+    if (clickedCard) {
+      window.scrollTo({ top: 0, behavior: "instant" })
+      setShowOverlay(true)
+    }
+  }, [clickedCard])
+
   useEffect(() => {
     if (clickedCard) {
-      setShowOverlay(true)
-      window.scrollTo({ top: 0, behavior: "instant" })
-      
       // Clean up animation after it completes
       animationRef.current = window.setTimeout(() => {
         setShowOverlay(false)
@@ -57,6 +62,10 @@ export function ZoomTransition({ children }: ZoomTransitionProps) {
   }
 
   const target = getTarget()
+  
+  // After scrolling to top, adjust the starting Y position to account for where
+  // the card was in document space (viewport position + scroll offset at click time)
+  const initialY = clickedCard.y + clickedCard.scrollOffset
 
   return (
     <>
@@ -73,7 +82,7 @@ export function ZoomTransition({ children }: ZoomTransitionProps) {
               style={{ borderRadius: 8 }}
               initial={{
                 x: clickedCard.x,
-                y: clickedCard.y,
+                y: initialY,
                 width: clickedCard.width,
                 height: clickedCard.height,
               }}

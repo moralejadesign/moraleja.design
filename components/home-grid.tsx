@@ -8,6 +8,7 @@ import { getBlobUrl } from "@/lib/config";
 import { useTransitionStore } from "@/stores/transition";
 import { MasonryGrid, MasonryCard, useMasonryCardContext } from "@/components/masonry";
 import { imageSizes } from "@/components/optimized-image";
+import { useIsBackNavigation } from "@/hooks/use-navigation-type";
 
 interface HomeGridProps {
   projects: Project[];
@@ -21,6 +22,7 @@ export function HomeGrid({ projects }: HomeGridProps) {
   const router = useRouter();
   const setClickedCard = useTransitionStore((state) => state.setClickedCard);
   const prefetchedRef = useRef<Set<string>>(new Set());
+  const isBackNav = useIsBackNavigation();
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -46,8 +48,8 @@ export function HomeGrid({ projects }: HomeGridProps) {
       width: rect.width,
       height: rect.height,
       imageUrl,
+      scrollOffset: window.scrollY,
     });
-    // Navigate immediately - no delay needed
     router.push(`/project/${project.slug}`);
   };
 
@@ -61,6 +63,7 @@ export function HomeGrid({ projects }: HomeGridProps) {
             isMobile={isMobile}
             onNavigate={handleProjectClick}
             onPrefetch={handlePrefetch}
+            skipLoadingAnimation={isBackNav}
           />
         ))}
       </MasonryGrid>
@@ -73,9 +76,10 @@ interface ProjectCardProps {
   isMobile: boolean;
   onNavigate: (project: Project, rect: DOMRect, imageUrl: string) => void;
   onPrefetch: (slug: string) => void;
+  skipLoadingAnimation?: boolean;
 }
 
-function ProjectCard({ project, isMobile, onNavigate, onPrefetch }: ProjectCardProps) {
+function ProjectCard({ project, isMobile, onNavigate, onPrefetch, skipLoadingAnimation }: ProjectCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const cardHeight = Math.round(project.heightRatio * (isMobile ? 150 : 250));
 
@@ -98,7 +102,7 @@ function ProjectCard({ project, isMobile, onNavigate, onPrefetch }: ProjectCardP
         onClick={handleClick}
         ariaLabel={`View project: ${project.title}`}
       >
-        <ProjectCardContent project={project} />
+        <ProjectCardContent project={project} skipLoadingAnimation={skipLoadingAnimation} />
       </MasonryCard>
     </div>
   );
@@ -106,11 +110,13 @@ function ProjectCard({ project, isMobile, onNavigate, onPrefetch }: ProjectCardP
 
 interface ProjectCardContentProps {
   project: Project;
+  skipLoadingAnimation?: boolean;
 }
 
-function ProjectCardContent({ project }: ProjectCardContentProps) {
+function ProjectCardContent({ project, skipLoadingAnimation }: ProjectCardContentProps) {
   const { isHovered, onImageLoad } = useMasonryCardContext();
-  const [isLoaded, setIsLoaded] = useState(false);
+  // Skip loading state on back navigation for instant display
+  const [isLoaded, setIsLoaded] = useState(skipLoadingAnimation ?? false);
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -132,7 +138,7 @@ function ProjectCardContent({ project }: ProjectCardContentProps) {
         onLoad={handleLoad}
       />
 
-      {/* Loading skeleton */}
+      {/* Loading skeleton - hidden on back navigation */}
       {!isLoaded && <div className="absolute inset-0 bg-muted animate-pulse" />}
 
       {/* Subtle hover overlay - brightness lift instead of darkening */}

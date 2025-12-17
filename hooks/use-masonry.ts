@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
+import { useIsBackNavigation } from "./use-navigation-type";
 
 /**
  * Configuration for the masonry grid layout.
@@ -50,11 +51,14 @@ export function snapToGrid(desiredHeight: number, isMobile: boolean = false): {
 /**
  * Custom hook for creating masonry layouts using CSS Grid row spanning.
  * Each item calculates its own row span based on content height.
+ * Skips entrance animation on back/forward navigation for instant display.
  */
 export function useMasonry() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isReady, setIsReady] = useState(false);
-  const hasInitializedRef = useRef(false);
+  const isBackNav = useIsBackNavigation();
+  // Skip fade-in animation on back navigation for instant display
+  const [isReady, setIsReady] = useState(isBackNav);
+  const hasInitializedRef = useRef(isBackNav);
 
   const recalculate = useCallback(() => {
     const container = containerRef.current;

@@ -11,6 +11,7 @@ import { markImageCached } from "@/lib/image-cache";
 import { MasonryGrid, MasonryCard, useMasonryCardContext } from "@/components/masonry";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { imageSizes } from "@/components/optimized-image";
+import { useIsBackNavigation } from "@/hooks/use-navigation-type";
 
 type GalleryAsset = {
   id: number;
@@ -38,6 +39,7 @@ export function GalleryGrid({ assets, availableTags, pageSize = 9 }: GalleryGrid
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [typeFilter, setTypeFilter] = useState<"all" | "image" | "video">("all");
   const [isMobile, setIsMobile] = useState(false);
+  const isBackNav = useIsBackNavigation();
   
   // Local state for lightbox - prevents re-renders on URL change
   const [viewingAssetId, setViewingAssetId] = useState<number | null>(() => {
@@ -304,6 +306,7 @@ export function GalleryGrid({ assets, availableTags, pageSize = 9 }: GalleryGrid
                 asset={asset}
                 isMobile={isMobile}
                 onClick={() => openViewer(asset.id)}
+                skipLoadingAnimation={isBackNav}
               />
             ))}
           </MasonryGrid>
@@ -344,10 +347,11 @@ interface AssetCardProps {
   asset: GalleryAsset;
   isMobile: boolean;
   onClick: () => void;
+  skipLoadingAnimation?: boolean;
 }
 
 // Memoized to prevent re-renders when lightbox state changes
-const AssetCard = memo(function AssetCard({ asset, isMobile, onClick }: AssetCardProps) {
+const AssetCard = memo(function AssetCard({ asset, isMobile, onClick, skipLoadingAnimation }: AssetCardProps) {
   // Deterministic height ratio based on asset id for visual variety
   const heightRatio = 1.0 + ((asset.id * 7) % 9) / 10;
   const cardHeight = Math.round(heightRatio * (isMobile ? 150 : 250));
@@ -358,18 +362,20 @@ const AssetCard = memo(function AssetCard({ asset, isMobile, onClick }: AssetCar
       onClick={onClick}
       ariaLabel={asset.title || "View asset"}
     >
-      <AssetCardContent asset={asset} />
+      <AssetCardContent asset={asset} skipLoadingAnimation={skipLoadingAnimation} />
     </MasonryCard>
   );
 });
 
 interface AssetCardContentProps {
   asset: GalleryAsset;
+  skipLoadingAnimation?: boolean;
 }
 
-function AssetCardContent({ asset }: AssetCardContentProps) {
+function AssetCardContent({ asset, skipLoadingAnimation }: AssetCardContentProps) {
   const { isHovered, onImageLoad } = useMasonryCardContext();
-  const [isLoaded, setIsLoaded] = useState(false);
+  // Skip loading animation on back navigation for instant display
+  const [isLoaded, setIsLoaded] = useState(skipLoadingAnimation ?? false);
 
   const handleLoad = () => {
     setIsLoaded(true);

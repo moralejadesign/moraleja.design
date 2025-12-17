@@ -8,6 +8,7 @@ interface CardPosition {
   width: number;
   height: number;
   imageUrl: string;
+  scrollOffset: number; // Scroll position at time of click
 }
 
 interface TargetPosition {

@@ -10,12 +10,14 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "100mb",
     },
     proxyClientMaxBodySize: "100mb",
+    // Enable scroll restoration for smoother back/forward navigation
+    scrollRestoration: true,
   },
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    qualities: [75, 85],
+    qualities: [75, 80, 85],
     minimumCacheTTL: 31536000, // 1 year
     remotePatterns: [
       {
