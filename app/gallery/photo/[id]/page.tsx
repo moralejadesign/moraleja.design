@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db, assets, projects } from "@/db";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and } from "drizzle-orm";
 import { GalleryPhotoView } from "./gallery-photo-view";
 
 export const dynamic = "force-dynamic";
@@ -48,6 +48,7 @@ async function getAllAssets() {
     })
     .from(assets)
     .leftJoin(projects, sql`${assets.projectId} = ${projects.id}`)
+    .where(eq(assets.showInGallery, true))
     .orderBy(desc(assets.createdAt));
 }
 

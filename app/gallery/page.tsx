@@ -4,7 +4,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { db, assets, projects } from "@/db";
-import { desc, sql } from "drizzle-orm";
+import { desc, sql, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +29,7 @@ async function getAssets() {
     })
     .from(assets)
     .leftJoin(projects, sql`${assets.projectId} = ${projects.id}`)
+    .where(eq(assets.showInGallery, true))
     .orderBy(desc(assets.createdAt));
 
   return allAssets;
@@ -38,7 +39,7 @@ async function getAllTags() {
   const result = await db
     .select({ tags: assets.tags })
     .from(assets)
-    .where(sql`${assets.tags} IS NOT NULL AND array_length(${assets.tags}, 1) > 0`);
+    .where(sql`${assets.showInGallery} = true AND ${assets.tags} IS NOT NULL AND array_length(${assets.tags}, 1) > 0`);
 
   const allTags = new Set<string>();
   result.forEach((row) => {

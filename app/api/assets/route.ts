@@ -82,6 +82,7 @@ export async function POST(request: Request) {
         tags: body.tags,
         keywords: body.keywords,
         projectId: body.projectId,
+        showInGallery: body.showInGallery !== undefined ? body.showInGallery : true,
       })
       .returning();
 

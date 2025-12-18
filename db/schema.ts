@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, real, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, real, timestamp, jsonb, integer, boolean } from "drizzle-orm/pg-core";
 
 // Block types with assetId support (url kept as fallback for backwards compatibility)
 export type BlockType = 
@@ -42,6 +42,9 @@ export const assets = pgTable("assets", {
   
   // Project link
   projectId: integer("project_id").references(() => projects.id, { onDelete: "set null" }),
+  
+  // Gallery visibility
+  showInGallery: boolean("show_in_gallery").notNull().default(true),
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db, assets, projects } from "@/db";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and } from "drizzle-orm";
 
 export async function GET(
   request: Request,
@@ -13,7 +13,7 @@ export async function GET(
     return NextResponse.json({ error: "Invalid asset ID" }, { status: 400 });
   }
 
-  // Get all assets for navigation context
+  // Get all assets for navigation context (only gallery-visible assets)
   const allAssets = await db
     .select({
       id: assets.id,
@@ -29,6 +29,7 @@ export async function GET(
     })
     .from(assets)
     .leftJoin(projects, sql`${assets.projectId} = ${projects.id}`)
+    .where(eq(assets.showInGallery, true))
     .orderBy(desc(assets.createdAt));
 
   const currentAsset = allAssets.find((a) => a.id === assetId);

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Image as ImageIcon, Video, Loader2, ExternalLink, Pencil, Trash2, Check, X, AlertCircle } from "lucide-react";
+import { Search, Image as ImageIcon, Video, Loader2, ExternalLink, Pencil, Trash2, Check, X, AlertCircle, Eye, EyeOff } from "lucide-react";
 import type { Asset } from "@/db/schema";
 import { TagSelector } from "./tag-selector";
+import { useVideoThumbnail } from "@/hooks/use-video-thumbnail";
 
 type AssetWithProject = Asset & {
   projectTitle?: string;
@@ -152,6 +153,7 @@ function AssetRow({
     altText: asset.altText || "",
     keywords: asset.keywords || "",
     tags: asset.tags || [] as string[],
+    showInGallery: asset.showInGallery ?? true,
   });
 
   const updateMutation = useMutation({
@@ -179,30 +181,7 @@ function AssetRow({
   return (
     <div className="p-4">
       <div className="flex gap-4">
-        {/* Thumbnail */}
-        <div className="w-24 h-24 flex-shrink-0 bg-muted overflow-hidden relative">
-          {asset.type === "video" ? (
-            <video
-              src={asset.url}
-              className="w-full h-full object-cover"
-              muted
-              playsInline
-            />
-          ) : (
-            <img
-              src={asset.url}
-              alt={asset.altText || "Asset"}
-              className="w-full h-full object-cover"
-            />
-          )}
-          <div className="absolute top-1 right-1 p-0.5 bg-black/50 text-white">
-            {asset.type === "video" ? (
-              <Video className="h-3 w-3" />
-            ) : (
-              <ImageIcon className="h-3 w-3" />
-            )}
-          </div>
-        </div>
+        <AssetThumbnail asset={asset} />
 
         {/* Content */}
         <div className="flex-1 min-w-0">
@@ -244,6 +223,17 @@ function AssetRow({
                 placeholder="Keywords (for SEO)"
                 className="w-full px-2 py-1 bg-background border border-border text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20"
               />
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.showInGallery}
+                    onChange={(e) => setFormData((p) => ({ ...p, showInGallery: e.target.checked }))}
+                    className="w-4 h-4"
+                  />
+                  <span>Show in gallery</span>
+                </label>
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
@@ -303,6 +293,11 @@ function AssetRow({
                 {asset.projectId && (
                   <span>Project #{asset.projectId}</span>
                 )}
+                {asset.showInGallery === false && (
+                  <span className="px-1.5 py-0.5 bg-muted text-muted-foreground">
+                    Hidden from gallery
+                  </span>
+                )}
               </div>
             </>
           )}
@@ -311,6 +306,13 @@ function AssetRow({
         {/* Actions */}
         {!isEditing && (
           <div className="flex flex-col gap-1">
+            <ToggleGalleryVisibilityButton
+              assetId={asset.id}
+              showInGallery={asset.showInGallery ?? true}
+              onToggle={() => {
+                queryClient.invalidateQueries({ queryKey: ["admin-assets"] });
+              }}
+            />
             <button
               onClick={onEdit}
               className="p-1.5 hover:bg-muted transition-colors"
@@ -364,6 +366,113 @@ function AssetRow({
     </div>
   );
 }
+
+interface ToggleGalleryVisibilityButtonProps {
+  assetId: number;
+  showInGallery: boolean;
+  onToggle: () => void;
+}
+
+function ToggleGalleryVisibilityButton({
+  assetId,
+  showInGallery,
+  onToggle,
+}: ToggleGalleryVisibilityButtonProps) {
+  const queryClient = useQueryClient();
+  const [isToggling, setIsToggling] = useState(false);
+
+  const toggleMutation = useMutation({
+    mutationFn: async (newValue: boolean) => {
+      const res = await fetch(`/api/assets/${assetId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ showInGallery: newValue }),
+      });
+      if (!res.ok) throw new Error("Failed to toggle gallery visibility");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-assets"] });
+      onToggle();
+    },
+  });
+
+  const handleToggle = () => {
+    setIsToggling(true);
+    toggleMutation.mutate(!showInGallery, {
+      onSettled: () => setIsToggling(false),
+    });
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      disabled={isToggling}
+      className={`p-1.5 transition-colors ${
+        showInGallery
+          ? "hover:bg-muted text-foreground"
+          : "hover:bg-muted/50 text-muted-foreground"
+      }`}
+      title={showInGallery ? "Hide from gallery" : "Show in gallery"}
+    >
+      {isToggling ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : showInGallery ? (
+        <Eye className="h-4 w-4" />
+      ) : (
+        <EyeOff className="h-4 w-4" />
+      )}
+    </button>
+  );
+}
+
+interface AssetThumbnailProps {
+  asset: AssetWithProject;
+}
+
+function AssetThumbnail({ asset }: AssetThumbnailProps) {
+  const { thumbnailUrl, isLoading } = useVideoThumbnail(
+    asset.type === "video" ? asset.url : null
+  );
+
+  return (
+    <div className="w-24 h-24 flex-shrink-0 bg-muted overflow-hidden relative">
+      {asset.type === "video" ? (
+        <>
+          {thumbnailUrl ? (
+            <img
+              src={thumbnailUrl}
+              alt={asset.altText || asset.title || "Video thumbnail"}
+              className="w-full h-full object-cover"
+            />
+          ) : isLoading ? (
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <Video className="h-6 w-6 text-muted-foreground" />
+            </div>
+          )}
+        </>
+      ) : (
+        <img
+          src={asset.url}
+          alt={asset.altText || "Asset"}
+          className="w-full h-full object-cover"
+        />
+      )}
+      <div className="absolute top-1 right-1 p-0.5 bg-black/50 text-white">
+        {asset.type === "video" ? (
+          <Video className="h-3 w-3" />
+        ) : (
+          <ImageIcon className="h-3 w-3" />
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback, memo } from "react";
+import { useState, useMemo, useEffect, useCallback, memo, useRef } from "react";
 import { Search, X, Image as ImageIcon, Video, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import { MasonryGrid, MasonryCard, useMasonryCardContext } from "@/components/ma
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { imageSizes } from "@/components/optimized-image";
 import { useIsBackNavigation } from "@/hooks/use-navigation-type";
+import { useVideoThumbnail } from "@/hooks/use-video-thumbnail";
 
 type GalleryAsset = {
   id: number;
@@ -374,8 +375,13 @@ interface AssetCardContentProps {
 
 function AssetCardContent({ asset, skipLoadingAnimation }: AssetCardContentProps) {
   const { isHovered, onImageLoad } = useMasonryCardContext();
-  // Skip loading animation on back navigation for instant display
   const [isLoaded, setIsLoaded] = useState(skipLoadingAnimation ?? false);
+  const [showVideo, setShowVideo] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const { thumbnailUrl, isLoading: thumbnailLoading } = useVideoThumbnail(
+    asset.type === "video" ? asset.url : null
+  );
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -385,25 +391,62 @@ function AssetCardContent({ asset, skipLoadingAnimation }: AssetCardContentProps
     onImageLoad();
   };
 
+  const handleThumbnailLoad = () => {
+    setIsLoaded(true);
+    onImageLoad();
+  };
+
+  useEffect(() => {
+    if (asset.type === "video" && thumbnailUrl && !thumbnailLoading) {
+      handleThumbnailLoad();
+    }
+  }, [thumbnailUrl, thumbnailLoading, asset.type]);
+
+  useEffect(() => {
+    if (showVideo && videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // Ignore autoplay errors
+      });
+    } else if (!showVideo && videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, [showVideo]);
+
   return (
     <>
       {asset.type === "video" ? (
-        <video
-          src={asset.url}
-          className={`h-full w-full object-cover transition-all duration-700 ease-out ${
-            isLoaded ? "opacity-100" : "opacity-0"
-          } group-hover:scale-[1.03]`}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          onLoadedData={handleLoad}
-          onMouseEnter={(e) => e.currentTarget.play()}
-          onMouseLeave={(e) => {
-            e.currentTarget.pause();
-            e.currentTarget.currentTime = 0;
-          }}
-        />
+        <>
+          {/* Video thumbnail - shown by default */}
+          {thumbnailUrl ? (
+            <img
+              src={thumbnailUrl}
+              alt={asset.altText || asset.title || "Video thumbnail"}
+              className={`h-full w-full object-cover transition-all duration-700 ease-out absolute inset-0 ${
+                showVideo ? "opacity-0" : isLoaded ? "opacity-100" : "opacity-0"
+              } group-hover:scale-[1.03]`}
+              onLoad={handleThumbnailLoad}
+            />
+          ) : null}
+          {/* Video element - shown on hover */}
+          <video
+            ref={videoRef}
+            src={asset.url}
+            className={`h-full w-full object-cover transition-all duration-700 ease-out absolute inset-0 ${
+              showVideo ? "opacity-100" : "opacity-0"
+            } group-hover:scale-[1.03]`}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            onLoadedData={() => {
+              setIsLoaded(true);
+              onImageLoad();
+            }}
+            onMouseEnter={() => setShowVideo(true)}
+            onMouseLeave={() => setShowVideo(false)}
+          />
+        </>
       ) : (
         <Image
           src={asset.url}

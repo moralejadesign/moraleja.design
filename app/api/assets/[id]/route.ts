@@ -51,6 +51,7 @@ export async function PATCH(
         tags: body.tags,
         keywords: body.keywords,
         projectId: body.projectId,
+        showInGallery: body.showInGallery,
         updatedAt: new Date(),
       })
       .where(eq(assets.id, assetId))
@@ -96,6 +97,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Failed to delete asset" }, { status: 500 });
   }
 }
+
 
 
 
