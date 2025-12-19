@@ -429,23 +429,23 @@ function AssetCardContent({ asset, skipLoadingAnimation }: AssetCardContentProps
             />
           ) : null}
           {/* Video element - shown on hover */}
-          <video
+        <video
             ref={videoRef}
-            src={asset.url}
+          src={asset.url}
             className={`h-full w-full object-cover transition-all duration-700 ease-out absolute inset-0 ${
               showVideo ? "opacity-100" : "opacity-0"
-            } group-hover:scale-[1.03]`}
-            muted
-            loop
-            playsInline
-            preload="metadata"
+          } group-hover:scale-[1.03]`}
+          muted
+          loop
+          playsInline
+          preload="metadata"
             onLoadedData={() => {
               setIsLoaded(true);
               onImageLoad();
             }}
             onMouseEnter={() => setShowVideo(true)}
             onMouseLeave={() => setShowVideo(false)}
-          />
+        />
         </>
       ) : (
         <Image
