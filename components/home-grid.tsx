@@ -55,18 +55,20 @@ export function HomeGrid({ projects }: HomeGridProps) {
 
   return (
     <div className="w-full px-3 py-8 md:px-8 md:py-12 lg:px-12">
-      <MasonryGrid>
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            isMobile={isMobile}
-            onNavigate={handleProjectClick}
-            onPrefetch={handlePrefetch}
-            skipLoadingAnimation={isBackNav}
-          />
-        ))}
-      </MasonryGrid>
+      <div className="mx-auto max-w-7xl">
+        <MasonryGrid>
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              isMobile={isMobile}
+              onNavigate={handleProjectClick}
+              onPrefetch={handlePrefetch}
+              skipLoadingAnimation={isBackNav}
+            />
+          ))}
+        </MasonryGrid>
+      </div>
     </div>
   );
 }

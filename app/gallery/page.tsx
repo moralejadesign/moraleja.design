@@ -57,15 +57,17 @@ export default async function GalleryPage() {
       <Header />
       <main className="flex-1 bg-background pt-16 md:pt-20">
         <div className="w-full px-3 py-8 md:px-8 md:py-12 lg:px-12">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Gallery</h1>
-            <p className="text-muted-foreground">
-              Browse our collection of creative work
-            </p>
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight mb-2">Gallery</h1>
+              <p className="text-muted-foreground">
+                Browse our collection of creative work
+              </p>
+            </div>
+            <Suspense fallback={<div className="text-muted-foreground">Loading gallery...</div>}>
+              <GalleryGrid assets={allAssets} availableTags={allTags} />
+            </Suspense>
           </div>
-          <Suspense fallback={<div className="text-muted-foreground">Loading gallery...</div>}>
-            <GalleryGrid assets={allAssets} availableTags={allTags} />
-          </Suspense>
         </div>
       </main>
       <Footer />
