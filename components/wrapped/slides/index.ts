@@ -6,5 +6,6 @@ export { ToolsSlide } from "./tools-slide";
 export { IndustriesSlide } from "./industries-slide";
 export { CountriesSlide } from "./countries-slide";
 export { FeaturedProjectSlide } from "./featured-project-slide";
+export { FounderSlide } from "./founder-slide";
 export { ThankYouSlide } from "./thank-you-slide";
 

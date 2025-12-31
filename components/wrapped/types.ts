@@ -34,6 +34,13 @@ export interface WrappedData {
     location: string;
   };
   
+  founder: {
+    name: string;
+    role: string;
+    image: string;
+    quote: string;
+  };
+  
   socialLinks: {
     website: string;
     instagram: string;

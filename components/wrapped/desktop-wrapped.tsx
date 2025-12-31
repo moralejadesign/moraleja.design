@@ -16,7 +16,7 @@ interface DesktopWrappedProps {
 export function DesktopWrapped({ data }: DesktopWrappedProps) {
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
-  const totalSections = 10;
+  const totalSections = 11;
 
   const scrollToSection = useCallback((index: number) => {
     const section = sectionsRef.current[index];
@@ -451,10 +451,58 @@ export function DesktopWrapped({ data }: DesktopWrappedProps) {
         </section>
       )}
 
-      {/* Outro Section */}
+      {/* Founder Section */}
       <section
         ref={(el) => {
           sectionsRef.current[9] = el;
+        }}
+        className="flex min-h-[80vh] items-center py-20"
+      >
+        <div className="mx-auto w-full max-w-md px-4 md:px-8">
+          <ScrollElement direction="up">
+            <div className="group relative overflow-visible mb-8">
+              <span className="corner-cross top-left" aria-hidden="true" />
+              <span className="corner-cross bottom-right" aria-hidden="true" />
+              
+              <div className="card-border relative aspect-[4/5] w-full overflow-hidden">
+                <Image
+                  src={data.founder.image}
+                  alt={data.founder.name}
+                  fill
+                  className="object-cover"
+                  sizes="400px"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+                
+                <div className="absolute bottom-4 left-4 right-4">
+                  <p className="text-foreground text-lg font-medium">{data.founder.name}</p>
+                  <p className="text-muted-foreground text-sm">{data.founder.role}</p>
+                </div>
+              </div>
+            </div>
+          </ScrollElement>
+          
+          <ScrollElement direction="up" delay={0.2}>
+            <div className="relative">
+              <div className="flex items-start gap-2">
+                <span className="text-3xl text-muted-foreground/30 font-serif leading-none">"</span>
+                <p className="text-base text-muted-foreground italic leading-relaxed pt-2">
+                  {data.founder.quote}
+                </p>
+              </div>
+              <div className="mt-4 flex items-center gap-2">
+                <span className="h-px w-8 bg-border" />
+                <span className="font-mono text-xs text-muted-foreground/60">{data.founder.name}</span>
+              </div>
+            </div>
+          </ScrollElement>
+        </div>
+      </section>
+
+      {/* Outro Section */}
+      <section
+        ref={(el) => {
+          sectionsRef.current[10] = el;
         }}
         className="flex min-h-[50vh] items-center py-20"
       >

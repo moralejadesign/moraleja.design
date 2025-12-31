@@ -15,6 +15,7 @@ import {
   IndustriesSlide,
   CountriesSlide,
   FeaturedProjectSlide,
+  FounderSlide,
   ThankYouSlide,
   type WrappedData,
 } from "@/components/wrapped";
@@ -101,6 +102,15 @@ export function WrappedPageContent({ data }: WrappedPageContentProps) {
                 <FeaturedProjectSlide project={data.featuredProject} />
               </SliderWrapper>
             )}
+
+            <SliderWrapper value="founder">
+              <FounderSlide
+                name={data.founder.name}
+                role={data.founder.role}
+                image={data.founder.image}
+                quote={data.founder.quote}
+              />
+            </SliderWrapper>
 
             <SliderWrapper value="thank-you">
               <ThankYouSlide

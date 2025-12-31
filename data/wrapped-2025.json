@@ -105,6 +105,12 @@
     "foundedYear": 2016,
     "location": "Colombia"
   },
+  "founder": {
+    "name": "Aleja",
+    "role": "Founder & Creative Director",
+    "image": "/about/founder.jpg",
+    "quote": "Every project this year reminded me why I started Moraleja—to help brands find their soul."
+  },
   "socialLinks": {
     "website": "https://moraleja.design",
     "instagram": "https://www.instagram.com/alejandramoralesgarzon_/",
