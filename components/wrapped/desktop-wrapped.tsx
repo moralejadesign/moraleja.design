@@ -283,29 +283,59 @@ export function DesktopWrapped({ data }: DesktopWrappedProps) {
               Some of our fav tools
             </h2>
           </ScrollElement>
-          <div className="grid grid-cols-3 gap-4 lg:grid-cols-6">
-            {data.tools.map((tool, i) => (
-              <ScrollElement
-                key={tool.name}
-                direction={i % 2 === 0 ? "left" : "right"}
-                delay={i * 0.1}
-              >
-                <div className="group relative overflow-visible">
-                  <span className="corner-cross top-left" aria-hidden="true" />
-                  <span className="corner-cross bottom-right" aria-hidden="true" />
-                  <div className="card-border bg-card/20 p-6 flex items-center justify-center aspect-square">
-                    <div className="relative h-14 w-14">
-                      <Image
-                        src={tool.icon}
-                        alt={tool.name}
-                        fill
-                        className="object-contain"
-                      />
+          <div className="flex flex-col gap-4">
+            {/* First row */}
+            <div className="grid grid-cols-3 gap-4">
+              {data.tools.slice(0, 3).map((tool, i) => (
+                <ScrollElement
+                  key={tool.name}
+                  direction={i % 2 === 0 ? "left" : "right"}
+                  delay={i * 0.1}
+                >
+                  <div className="group relative overflow-visible">
+                    <span className="corner-cross top-left" aria-hidden="true" />
+                    <span className="corner-cross bottom-right" aria-hidden="true" />
+                    <div className="card-border bg-card/20 p-6 flex items-center justify-center aspect-square">
+                      <div className="relative h-14 w-14">
+                        <Image
+                          src={tool.icon}
+                          alt={tool.name}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </ScrollElement>
-            ))}
+                </ScrollElement>
+              ))}
+            </div>
+            {/* Second row - centered */}
+            <div className="flex justify-center">
+              <div className="grid grid-cols-3 gap-4 w-full">
+                {data.tools.slice(3).map((tool, i) => (
+                  <ScrollElement
+                    key={tool.name}
+                    direction={i % 2 === 0 ? "left" : "right"}
+                    delay={0.3 + i * 0.1}
+                  >
+                    <div className="group relative overflow-visible">
+                      <span className="corner-cross top-left" aria-hidden="true" />
+                      <span className="corner-cross bottom-right" aria-hidden="true" />
+                      <div className="card-border bg-card/20 p-6 flex items-center justify-center aspect-square">
+                        <div className="relative h-14 w-14">
+                          <Image
+                            src={tool.icon}
+                            alt={tool.name}
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollElement>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -33,29 +33,60 @@ export function ToolsSlide({ tools }: ToolsSlideProps) {
         <h2 className="text-2xl font-light text-foreground">Some of our fav tools</h2>
       </motion.div>
 
-      <div className="grid w-full grid-cols-3 gap-3">
-        {tools.map((tool, index) => (
-          <motion.div
-            key={tool.name}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 + index * 0.1, duration: 0.4 }}
-            className="group relative overflow-visible"
-          >
-            <span className="corner-cross top-left" aria-hidden="true" />
-            <span className="corner-cross bottom-right" aria-hidden="true" />
-            <div className="card-border bg-card/20 p-6 flex items-center justify-center aspect-square">
-              <div className="relative h-14 w-14">
-                <Image
-                  src={tool.icon}
-                  alt={tool.name}
-                  fill
-                  className="object-contain"
-                />
+      <div className="flex w-full flex-col gap-3">
+        {/* First row */}
+        <div className="grid grid-cols-3 gap-3">
+          {tools.slice(0, 3).map((tool, index) => (
+            <motion.div
+              key={tool.name}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 + index * 0.1, duration: 0.4 }}
+              className="group relative overflow-visible"
+            >
+              <span className="corner-cross top-left" aria-hidden="true" />
+              <span className="corner-cross bottom-right" aria-hidden="true" />
+              <div className="card-border bg-card/20 p-6 flex items-center justify-center aspect-square">
+                <div className="relative h-14 w-14">
+                  <Image
+                    src={tool.icon}
+                    alt={tool.name}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Second row - centered */}
+        <div className="flex justify-center">
+          <div className="grid grid-cols-3 gap-3 w-full">
+            {tools.slice(3).map((tool, index) => (
+              <motion.div
+                key={tool.name}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
+                className="group relative overflow-visible"
+              >
+                <span className="corner-cross top-left" aria-hidden="true" />
+                <span className="corner-cross bottom-right" aria-hidden="true" />
+                <div className="card-border bg-card/20 p-6 flex items-center justify-center aspect-square">
+                  <div className="relative h-14 w-14">
+                    <Image
+                      src={tool.icon}
+                      alt={tool.name}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
