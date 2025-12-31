@@ -1,0 +1,95 @@
+{
+  "year": 2025,
+  "generatedAt": "2025-12-31T17:59:46.467Z",
+  "metrics": {
+    "totalProjects": 7,
+    "totalAssets": 39,
+    "totalVideos": 9,
+    "totalImages": 30
+  },
+  "videoEditingMinutes": 2400,
+  "industries": [
+    "Technology",
+    "Finance",
+    "Healthcare",
+    "E-commerce",
+    "Education",
+    "Entertainment"
+  ],
+  "countries": [
+    {
+      "name": "Colombia",
+      "flag": "🇨🇴"
+    },
+    {
+      "name": "United States",
+      "flag": "🇺🇸"
+    },
+    {
+      "name": "Spain",
+      "flag": "🇪🇸"
+    },
+    {
+      "name": "Mexico",
+      "flag": "🇲🇽"
+    },
+    {
+      "name": "Argentina",
+      "flag": "🇦🇷"
+    }
+  ],
+  "projects": [
+    {
+      "slug": "kebo",
+      "title": "Kebo Finance",
+      "thumbnail": "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/projects/KEBO_PROJECT-01.jpg"
+    },
+    {
+      "slug": "the-hackathon-company",
+      "title": "THE HACKATHON COMPANY",
+      "thumbnail": "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/projects/THC-Brand01-01.png"
+    },
+    {
+      "slug": "bit-picks",
+      "title": "BIT PICKS",
+      "thumbnail": "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/projects/1765777837923-BITPICKS_PROJECT-01.jpg"
+    },
+    {
+      "slug": "ia-hackathon-peru",
+      "title": "IA HACKATHON PERÚ",
+      "thumbnail": "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/projects/1765774734284-IA_HACK_PE-01.png"
+    },
+    {
+      "slug": "the-childrens-trust",
+      "title": "The Childrens Trust",
+      "thumbnail": "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/TCT-01.jpg"
+    },
+    {
+      "slug": "whoop-cash",
+      "title": "Whoop Cash",
+      "thumbnail": "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/WC-Project-01.jpg"
+    },
+    {
+      "slug": "pintel",
+      "title": "Pintel",
+      "thumbnail": "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/pintel_og_2.png"
+    }
+  ],
+  "featuredProject": {
+    "slug": "kebo",
+    "title": "Kebo Finance",
+    "thumbnail": "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/projects/KEBO_PROJECT-01.jpg"
+  },
+  "studio": {
+    "name": "Moraleja Design",
+    "tagline": "Building brands with soul",
+    "description": "Creative studio shaping brands, visuals, and experiences.",
+    "foundedYear": 2016,
+    "location": "Colombia"
+  },
+  "socialLinks": {
+    "website": "https://moraleja.design",
+    "instagram": "https://www.instagram.com/alejandramoralesgarzon_/",
+    "contact": "/contact"
+  }
+}
