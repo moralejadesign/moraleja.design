@@ -11,6 +11,7 @@ import {
   StatsSlide,
   SingleStatSlide,
   PartnersSlide,
+  ToolsSlide,
   IndustriesSlide,
   CountriesSlide,
   FeaturedProjectSlide,
@@ -74,10 +75,14 @@ export function WrappedPageContent({ data }: WrappedPageContentProps) {
               <SingleStatSlide
                 title="Hours of creativity"
                 subtitle="Time invested in video production"
-                value={data.videoEditingMinutes}
-                label="Minutes of Video Editing"
-                footnote={`That's ${Math.round(data.videoEditingMinutes / 60)} hours of crafting motion`}
+                value={Math.round(data.videoEditingMinutes / 60)}
+                label="Hours of Animation"
+                footnote="Ese trabajo equivale a estar entre 38 y 50 días seguidos animando sin parar"
               />
+            </SliderWrapper>
+
+            <SliderWrapper value="tools">
+              <ToolsSlide tools={data.tools} />
             </SliderWrapper>
 
             <SliderWrapper value="industries">

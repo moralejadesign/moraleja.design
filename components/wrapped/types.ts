@@ -10,6 +10,7 @@ export interface WrappedData {
   };
   
   videoEditingMinutes: number;
+  tools: Array<{ name: string; icon: string }>;
   industries: string[];
   countries: Array<{ name: string; flag: string }>;
   

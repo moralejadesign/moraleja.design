@@ -1,13 +1,39 @@
 {
   "year": 2025,
-  "generatedAt": "2025-12-31T17:59:46.467Z",
+  "generatedAt": "2025-12-31T20:20:18.718Z",
   "metrics": {
-    "totalProjects": 7,
-    "totalAssets": 39,
-    "totalVideos": 9,
-    "totalImages": 30
+    "totalProjects": 9,
+    "totalAssets": 400,
+    "totalVideos": 35,
+    "totalImages": 350
   },
-  "videoEditingMinutes": 2400,
+  "videoEditingMinutes": 19200,
+  "tools": [
+    {
+      "name": "After Effects",
+      "icon": "/tools/after effects.svg"
+    },
+    {
+      "name": "Figma",
+      "icon": "/tools/figma.svg"
+    },
+    {
+      "name": "Midjourney",
+      "icon": "/tools/modjourney.svg"
+    },
+    {
+      "name": "Illustrator",
+      "icon": "/tools/illustrator.svg"
+    },
+    {
+      "name": "v0",
+      "icon": "/tools/v0.svg"
+    },
+    {
+      "name": "Cursor",
+      "icon": "/tools/cursor.svg"
+    }
+  ],
   "industries": [
     "Technology",
     "Finance",
@@ -26,16 +52,8 @@
       "flag": "🇺🇸"
     },
     {
-      "name": "Spain",
-      "flag": "🇪🇸"
-    },
-    {
-      "name": "Mexico",
-      "flag": "🇲🇽"
-    },
-    {
-      "name": "Argentina",
-      "flag": "🇦🇷"
+      "name": "Perú",
+      "flag": "🇵🇪"
     }
   ],
   "projects": [

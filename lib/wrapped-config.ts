@@ -18,9 +18,7 @@ export const wrappedConfig = {
   countries: [
     { name: "Colombia", flag: "🇨🇴" },
     { name: "United States", flag: "🇺🇸" },
-    { name: "Spain", flag: "🇪🇸" },
-    { name: "Mexico", flag: "🇲🇽" },
-    { name: "Argentina", flag: "🇦🇷" },
+    { name: "Perú", flag: "🇵🇪" },
   ],
   
   // Featured project slug (must exist in database)

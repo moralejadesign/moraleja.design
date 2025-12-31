@@ -16,7 +16,7 @@ interface DesktopWrappedProps {
 export function DesktopWrapped({ data }: DesktopWrappedProps) {
   const sectionsRef = useRef<(HTMLElement | null)[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
-  const totalSections = 9;
+  const totalSections = 10;
 
   const scrollToSection = useCallback((index: number) => {
     const section = sectionsRef.current[index];
@@ -257,23 +257,63 @@ export function DesktopWrapped({ data }: DesktopWrappedProps) {
           <ScrollElement direction="up" delay={0.2}>
             <div className="mx-auto max-w-xs">
               <StatCard
-                label="Minutes of Video Editing"
-                value={data.videoEditingMinutes}
+                label="Hours of Animation"
+                value={Math.round(data.videoEditingMinutes / 60)}
               />
             </div>
           </ScrollElement>
           <ScrollElement direction="up" delay={0.3}>
             <p className="mt-6 text-center font-mono text-xs text-muted-foreground">
-              That's {Math.round(data.videoEditingMinutes / 60)} hours of crafting motion
+              Ese trabajo equivale a estar entre 38 y 50 días seguidos animando sin parar
             </p>
           </ScrollElement>
+        </div>
+      </section>
+
+      {/* Tools Section */}
+      <section
+        ref={(el) => {
+          sectionsRef.current[5] = el;
+        }}
+        className="flex min-h-[60vh] items-center py-20"
+      >
+        <div className="mx-auto w-full max-w-xl px-4 md:px-8">
+          <ScrollElement direction="up">
+            <h2 className="mb-10 text-center text-2xl font-light text-foreground sm:text-3xl">
+              Some of our fav tools
+            </h2>
+          </ScrollElement>
+          <div className="grid grid-cols-3 gap-4 lg:grid-cols-6">
+            {data.tools.map((tool, i) => (
+              <ScrollElement
+                key={tool.name}
+                direction={i % 2 === 0 ? "left" : "right"}
+                delay={i * 0.1}
+              >
+                <div className="group relative overflow-visible">
+                  <span className="corner-cross top-left" aria-hidden="true" />
+                  <span className="corner-cross bottom-right" aria-hidden="true" />
+                  <div className="card-border bg-card/20 p-6 flex items-center justify-center aspect-square">
+                    <div className="relative h-14 w-14">
+                      <Image
+                        src={tool.icon}
+                        alt={tool.name}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </ScrollElement>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Industries Section */}
       <section
         ref={(el) => {
-          sectionsRef.current[5] = el;
+          sectionsRef.current[6] = el;
         }}
         className="flex min-h-[60vh] items-center py-20"
       >
@@ -305,7 +345,7 @@ export function DesktopWrapped({ data }: DesktopWrappedProps) {
       {/* Countries Section */}
       <section
         ref={(el) => {
-          sectionsRef.current[6] = el;
+          sectionsRef.current[7] = el;
         }}
         className="flex min-h-[60vh] items-center py-20"
       >
@@ -341,7 +381,7 @@ export function DesktopWrapped({ data }: DesktopWrappedProps) {
       {data.featuredProject && (
         <section
           ref={(el) => {
-            sectionsRef.current[7] = el;
+            sectionsRef.current[8] = el;
           }}
           className="flex min-h-[80vh] items-center py-20"
         >
@@ -384,7 +424,7 @@ export function DesktopWrapped({ data }: DesktopWrappedProps) {
       {/* Outro Section */}
       <section
         ref={(el) => {
-          sectionsRef.current[8] = el;
+          sectionsRef.current[9] = el;
         }}
         className="flex min-h-[50vh] items-center py-20"
       >
