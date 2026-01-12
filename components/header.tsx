@@ -114,7 +114,7 @@ export function Header() {
                   <span className="flex items-center gap-1.5">
                     {link.label}
                     {isShop && showNewBadge && (
-                      <span className="rounded-full bg-brand-accent/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand-accent">
+                      <span className="rounded-full bg-brand-accent/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-accent">
                         New
                       </span>
                     )}
