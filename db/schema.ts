@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, real, timestamp, jsonb, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, real, timestamp, jsonb, integer, boolean, decimal } from "drizzle-orm/pg-core";
 
 // Block types with assetId support (url kept as fallback for backwards compatibility)
 export type BlockType = 
@@ -52,3 +52,53 @@ export const assets = pgTable("assets", {
 
 export type Asset = typeof assets.$inferSelect;
 export type NewAsset = typeof assets.$inferInsert;
+
+// Product types for shop
+export type ProductType = "wallpaper" | "print" | "poster";
+
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  type: varchar("type", { length: 20 }).notNull().$type<ProductType>(),
+  description: text("description"),
+  thumbnail: text("thumbnail").notNull(),
+  
+  // Pricing (ready for future payments)
+  price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  isFree: boolean("is_free").notNull().default(true),
+  
+  // Publishing
+  isPublished: boolean("is_published").notNull().default(false),
+  position: integer("position").notNull().default(0),
+  
+  // SEO metadata
+  tags: text("tags").array(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
+
+export const productVariants = pgTable("product_variants", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  
+  label: varchar("label", { length: 100 }).notNull(), // e.g., "4K Desktop", "Mobile", "Print-Ready PDF"
+  url: text("url").notNull(),
+  
+  // Dimensions for display
+  width: integer("width"),
+  height: integer("height"),
+  fileSize: varchar("file_size", { length: 50 }), // e.g., "12.5 MB"
+  
+  // Analytics
+  downloadCount: integer("download_count").notNull().default(0),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type ProductVariant = typeof productVariants.$inferSelect;
+export type NewProductVariant = typeof productVariants.$inferInsert;
