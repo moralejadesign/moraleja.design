@@ -49,6 +49,7 @@
 
 :root {
   --radius: 0.625rem;
+  --header-height: 64px;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   /* Brand accent - Spring Green #00ff7f */
@@ -271,4 +272,16 @@
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Header height responsive */
+@media (min-width: 768px) {
+  :root {
+    --header-height: 80px;
+  }
+}
+
+/* Safe area padding for mobile bottom sheets */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
 }

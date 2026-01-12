@@ -10,6 +10,7 @@ import { useHeaderStore } from "@/stores/header"
 const navLinks = [
   { href: "/", label: "Work" },
   { href: "/gallery", label: "Gallery" },
+  { href: "/shop", label: "Shop" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ]
