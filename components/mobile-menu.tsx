@@ -3,6 +3,7 @@
 import { Drawer } from "vaul"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 import { ThemeSwitcher } from "./theme-switcher"
 
 const MenuIcon = () => (
@@ -40,6 +41,7 @@ const CloseIcon = () => (
 const navLinks = [
   { href: "/", label: "Work" },
   { href: "/gallery", label: "Gallery" },
+  { href: "/shop", label: "Shop", isNew: true },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ]
@@ -51,6 +53,22 @@ interface MobileMenuProps {
 
 export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
   const pathname = usePathname()
+  const [showNewBadge, setShowNewBadge] = useState(false)
+
+  useEffect(() => {
+    const hasSeenShopBadge = localStorage.getItem("shop-badge-seen")
+    if (!hasSeenShopBadge) {
+      setShowNewBadge(true)
+    }
+  }, [])
+
+  const handleShopClick = () => {
+    if (showNewBadge) {
+      localStorage.setItem("shop-badge-seen", "true")
+      setShowNewBadge(false)
+    }
+    onOpenChange(false)
+  }
 
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction="right">
@@ -78,12 +96,13 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
             {navLinks.map((link) => {
               const isActive = pathname === link.href || 
                 (link.href !== "/" && pathname.startsWith(link.href))
+              const isShop = link.href === "/shop"
               
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => isShop ? handleShopClick() : onOpenChange(false)}
                   className={`group relative flex items-center py-3 text-sm font-medium tracking-wide transition-colors ${
                     isActive
                       ? "text-foreground"
@@ -94,6 +113,11 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-1 h-1 rounded-full bg-brand-accent" />
                   )}
                   {link.label}
+                  {isShop && showNewBadge && (
+                    <span className="ml-2 rounded-full bg-brand-accent/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand-accent">
+                      New
+                    </span>
+                  )}
                 </Link>
               )
             })}

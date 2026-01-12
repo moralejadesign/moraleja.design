@@ -10,7 +10,7 @@ import { useHeaderStore } from "@/stores/header"
 const navLinks = [
   { href: "/", label: "Work" },
   { href: "/gallery", label: "Gallery" },
-  { href: "/shop", label: "Shop" },
+  { href: "/shop", label: "Shop", isNew: true },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ]
@@ -18,6 +18,7 @@ const navLinks = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showNewBadge, setShowNewBadge] = useState(false)
   const { projectTitle, projectThumbnail, showProjectTitle } = useHeaderStore()
   const pathname = usePathname()
 
@@ -29,6 +30,20 @@ export function Header() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  useEffect(() => {
+    const hasSeenShopBadge = localStorage.getItem("shop-badge-seen")
+    if (!hasSeenShopBadge) {
+      setShowNewBadge(true)
+    }
+  }, [])
+
+  const handleShopClick = () => {
+    if (showNewBadge) {
+      localStorage.setItem("shop-badge-seen", "true")
+      setShowNewBadge(false)
+    }
+  }
 
   const displayProjectTitle = projectTitle && showProjectTitle
 
@@ -85,16 +100,25 @@ export function Header() {
             {navLinks.map((link) => {
               const isActive = pathname === link.href || 
                 (link.href !== "/" && pathname.startsWith(link.href))
+              const isShop = link.href === "/shop"
               
               return (
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={() => isShop && handleShopClick()}
                   className={`relative text-sm font-medium tracking-wide transition-colors hover:text-foreground ${
                     isActive ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
-                  {link.label}
+                  <span className="flex items-center gap-1.5">
+                    {link.label}
+                    {isShop && showNewBadge && (
+                      <span className="rounded-full bg-brand-accent/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand-accent">
+                        New
+                      </span>
+                    )}
+                  </span>
                   {isActive && (
                     <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-brand-accent" />
                   )}
