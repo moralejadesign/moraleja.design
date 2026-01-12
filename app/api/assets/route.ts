@@ -70,6 +70,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // Use upsert to handle case where blob was overwritten
     const [newAsset] = await db
       .insert(assets)
       .values({
@@ -83,6 +84,21 @@ export async function POST(request: Request) {
         keywords: body.keywords,
         projectId: body.projectId,
         showInGallery: body.showInGallery !== undefined ? body.showInGallery : true,
+      })
+      .onConflictDoUpdate({
+        target: assets.url,
+        set: {
+          type: body.type,
+          filename: body.filename,
+          title: body.title,
+          description: body.description,
+          altText: body.altText,
+          tags: body.tags,
+          keywords: body.keywords,
+          projectId: body.projectId,
+          showInGallery: body.showInGallery !== undefined ? body.showInGallery : true,
+          updatedAt: sql`now()`,
+        },
       })
       .returning();
 
