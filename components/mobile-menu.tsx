@@ -41,6 +41,7 @@ const CloseIcon = () => (
 const navLinks = [
   { href: "/", label: "Work" },
   { href: "/gallery", label: "Gallery" },
+  { href: "/lab", label: "Lab" },
   { href: "/shop", label: "Shop", isNew: true },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },

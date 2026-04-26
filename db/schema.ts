@@ -102,3 +102,26 @@ export const productVariants = pgTable("product_variants", {
 
 export type ProductVariant = typeof productVariants.$inferSelect;
 export type NewProductVariant = typeof productVariants.$inferInsert;
+
+// Lab project tools and categories
+export type LabTool = "v0" | "Cursor" | "Claude Code" | "Midjourney" | "Higgsfield" | "Image 2.0" | "Nano Banana";
+export type LabCategory = "code" | "creative";
+
+export const labProjects = pgTable("lab_projects", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  thumbnail: text("thumbnail").notNull(),
+  externalUrl: text("external_url").notNull(),
+  tool: varchar("tool", { length: 100 }).notNull().$type<LabTool>(),
+  category: varchar("category", { length: 20 }).notNull().$type<LabCategory>(),
+  tags: text("tags").array(),
+  isPublished: boolean("is_published").notNull().default(false),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type LabProject = typeof labProjects.$inferSelect;
+export type NewLabProject = typeof labProjects.$inferInsert;
