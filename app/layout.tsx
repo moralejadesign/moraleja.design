@@ -45,9 +45,9 @@ export const metadata: Metadata = {
     description: "Creative studio shaping brands, visuals, and experiences.",
     images: [
       {
-        url: "/brand_assets/MORALEJA_OG.png",
-        width: 1024,
-        height: 538,
+        url: "/brand_assets/MORALEJA_OG.jpg",
+        width: 1200,
+        height: 630,
         alt: "Moraleja Design",
       },
     ],

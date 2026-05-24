@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import founderImage from "@/public/about/founder.jpg";
+import founderImage from "@/public/about/founder.png";
 
 export function AboutImage() {
   const [isLoaded, setIsLoaded] = useState(false);
