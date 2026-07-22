@@ -8,6 +8,8 @@ import Link from "next/link";
 import type { Project, BlockType } from "@/db/schema";
 import { BlockEditor } from "./block-editor";
 import { ImageField } from "./image-uploader";
+import { TagSelector } from "./tag-selector";
+import { PREDEFINED_TOOLS } from "@/lib/tools";
 
 interface ProjectFormProps {
   project?: Project;
@@ -21,6 +23,7 @@ type ProjectInput = {
   heightRatio: number;
   textContrast: string;
   blocks: BlockType[];
+  tools: string[];
 };
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -62,6 +65,7 @@ export function ProjectForm({ project, isNew }: ProjectFormProps) {
     heightRatio: project?.heightRatio ?? 1.5,
     textContrast: project?.textContrast ?? "light",
     blocks: (project?.blocks as BlockType[]) ?? [],
+    tools: project?.tools ?? [],
   });
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -78,7 +82,8 @@ export function ProjectForm({ project, isNew }: ProjectFormProps) {
         formData.thumbnail !== project.thumbnail ||
         formData.heightRatio !== project.heightRatio ||
         formData.textContrast !== project.textContrast ||
-        JSON.stringify(formData.blocks) !== JSON.stringify(project.blocks);
+        JSON.stringify(formData.blocks) !== JSON.stringify(project.blocks) ||
+        JSON.stringify(formData.tools) !== JSON.stringify(project.tools ?? []);
       setHasChanges(hasChanged);
     } else {
       setHasChanges(formData.title.length > 0);
@@ -315,6 +320,16 @@ export function ProjectForm({ project, isNew }: ProjectFormProps) {
             <ImageField
               value={formData.thumbnail}
               onChange={(thumbnail) => updateField("thumbnail", thumbnail)}
+            />
+          </div>
+
+          <div className="p-6 border border-border">
+            <TagSelector
+              selectedTags={formData.tools}
+              onChange={(tools) => updateField("tools", tools)}
+              label="Tools"
+              predefinedOptions={PREDEFINED_TOOLS}
+              customPlaceholder="Add custom tool..."
             />
           </div>
 

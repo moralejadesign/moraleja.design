@@ -42,6 +42,7 @@ export async function POST(request: Request) {
         heightRatio: body.heightRatio ?? 1.5,
         textContrast: body.textContrast ?? "light",
         blocks: body.blocks ?? [],
+        tools: body.tools ?? [],
         position: nextPosition,
       })
       .returning();

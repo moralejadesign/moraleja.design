@@ -9,6 +9,7 @@ import { ZoomTransition } from "@/components/zoom-transition"
 import { useTransitionStore } from "@/stores/transition"
 import { useHeaderStore } from "@/stores/header"
 import { getBlobUrl } from "@/lib/config"
+import { getToolColor } from "@/lib/tools"
 
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect
 
@@ -256,13 +257,25 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
           <span>Back</span>
         </Link>
 
-        <div className="mb-8">
-          <h1 
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <h1
             ref={titleRef}
             className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl"
           >
             {project.title}
           </h1>
+          {project.tools && project.tools.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {project.tools.map((tool) => (
+                <span
+                  key={tool}
+                  className={`px-2.5 py-1 text-xs font-medium rounded-full ${getToolColor(tool)}`}
+                >
+                  {tool}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-8">

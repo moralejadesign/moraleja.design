@@ -3,16 +3,7 @@
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
 import type { LabProject, LabCategory } from "@/db/schema";
-
-const TOOL_COLORS: Record<string, string> = {
-  "v0": "bg-violet-500/10 text-violet-600 dark:text-violet-400",
-  "Cursor": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  "Claude Code": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-  "Midjourney": "bg-pink-500/10 text-pink-600 dark:text-pink-400",
-  "Higgsfield": "bg-green-500/10 text-green-600 dark:text-green-400",
-  "Image 2.0": "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
-  "Nano Banana": "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-};
+import { getToolColor } from "@/lib/tools";
 
 interface LabGridProps {
   items: LabProject[];
@@ -26,7 +17,7 @@ interface SectionProps {
 }
 
 function LabCard({ item }: { item: LabProject }) {
-  const toolColor = TOOL_COLORS[item.tool] ?? "bg-muted text-muted-foreground";
+  const toolColor = getToolColor(item.tool);
 
   return (
     <a

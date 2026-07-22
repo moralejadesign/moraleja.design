@@ -19,6 +19,7 @@ export const projects = pgTable("projects", {
   heightRatio: real("height_ratio").notNull().default(1.5),
   textContrast: varchar("text_contrast", { length: 10 }).default("light"),
   blocks: jsonb("blocks").$type<BlockType[]>().notNull().default([]),
+  tools: text("tools").array(),
   position: integer("position").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

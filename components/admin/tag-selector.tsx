@@ -8,9 +8,19 @@ interface TagSelectorProps {
   selectedTags: string[];
   onChange: (tags: string[]) => void;
   compact?: boolean;
+  label?: string;
+  predefinedOptions?: readonly string[];
+  customPlaceholder?: string;
 }
 
-export function TagSelector({ selectedTags, onChange, compact = false }: TagSelectorProps) {
+export function TagSelector({
+  selectedTags,
+  onChange,
+  compact = false,
+  label = "Tags",
+  predefinedOptions = PREDEFINED_TAGS,
+  customPlaceholder = "Add custom tag...",
+}: TagSelectorProps) {
   const [newTag, setNewTag] = useState("");
   const [showCustomInput, setShowCustomInput] = useState(false);
 
@@ -46,14 +56,14 @@ export function TagSelector({ selectedTags, onChange, compact = false }: TagSele
 
   // Get custom tags (tags not in predefined list)
   const customTags = selectedTags.filter(
-    (tag) => !PREDEFINED_TAGS.map(normalizeTag).includes(normalizeTag(tag))
+    (tag) => !predefinedOptions.map(normalizeTag).includes(normalizeTag(tag))
   );
 
   if (compact) {
     return (
       <div className="space-y-2">
         <div className="flex flex-wrap gap-1">
-          {PREDEFINED_TAGS.map((tag) => {
+          {predefinedOptions.map((tag) => {
             const isSelected = normalizedSelected.includes(normalizeTag(tag));
             return (
               <button
@@ -94,7 +104,7 @@ export function TagSelector({ selectedTags, onChange, compact = false }: TagSele
               onBlur={() => {
                 if (!newTag.trim()) setShowCustomInput(false);
               }}
-              placeholder="Custom tag..."
+              placeholder={customPlaceholder}
               autoFocus
               className="w-24 px-1 py-0.5 bg-background border border-border text-xs focus:outline-none"
             />
@@ -115,12 +125,12 @@ export function TagSelector({ selectedTags, onChange, compact = false }: TagSele
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-muted-foreground">
-        Tags
+        {label}
       </label>
-      
+
       {/* Predefined Tags */}
       <div className="flex flex-wrap gap-2">
-        {PREDEFINED_TAGS.map((tag) => {
+        {predefinedOptions.map((tag) => {
           const isSelected = normalizedSelected.includes(normalizeTag(tag));
           return (
             <button
@@ -171,7 +181,7 @@ export function TagSelector({ selectedTags, onChange, compact = false }: TagSele
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Add custom tag..."
+          placeholder={customPlaceholder}
           className="flex-1 px-3 py-2 bg-background border border-border text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20"
         />
         <button
