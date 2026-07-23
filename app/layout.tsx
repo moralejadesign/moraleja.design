@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/react";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
@@ -8,14 +8,20 @@ import { ThemeProvider } from "@/providers/theme";
 import { QueryProvider } from "@/providers/query";
 import { config } from "@/lib/config";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const monoblock = localFont({
+  src: [
+    { path: "./fonts/monoblock/Monoblock-Thin.otf", weight: "100", style: "normal" },
+    { path: "./fonts/monoblock/Monoblock-ExtraLight.otf", weight: "200", style: "normal" },
+    { path: "./fonts/monoblock/Monoblock-Light.otf", weight: "300", style: "normal" },
+    { path: "./fonts/monoblock/Monoblock-Regular.otf", weight: "400", style: "normal" },
+    { path: "./fonts/monoblock/Monoblock-Medium.otf", weight: "500", style: "normal" },
+    { path: "./fonts/monoblock/Monoblock-SemiBold.otf", weight: "600", style: "normal" },
+    { path: "./fonts/monoblock/Monoblock-Bold.otf", weight: "700", style: "normal" },
+    { path: "./fonts/monoblock/Monoblock-ExtraBold.otf", weight: "800", style: "normal" },
+    { path: "./fonts/monoblock/Monoblock-Black.otf", weight: "900", style: "normal" },
+  ],
+  variable: "--font-monoblock",
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -91,7 +97,7 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${monoblock.variable} antialiased`}
         >
           <ThemeProvider>
             <QueryProvider>
