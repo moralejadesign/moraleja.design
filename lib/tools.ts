@@ -1,6 +1,11 @@
 // Suggested design/build tools, seeded from the Lab section's tool list.
 // Any project can add tools beyond this list.
 export const PREDEFINED_TOOLS = [
+  "Illustrator",
+  "Photoshop",
+  "Figma",
+  "After Effects",
+  "Procreate",
   "v0",
   "Cursor",
   "Claude Code",

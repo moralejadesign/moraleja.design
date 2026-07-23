@@ -9,7 +9,6 @@ import { ZoomTransition } from "@/components/zoom-transition"
 import { useTransitionStore } from "@/stores/transition"
 import { useHeaderStore } from "@/stores/header"
 import { getBlobUrl } from "@/lib/config"
-import { getToolColor } from "@/lib/tools"
 
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect
 
@@ -269,7 +268,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
               {project.tools.map((tool) => (
                 <span
                   key={tool}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-full ${getToolColor(tool)}`}
+                  className="px-2.5 py-1 text-xs font-medium uppercase tracking-wide rounded-full bg-muted text-muted-foreground"
                 >
                   {tool}
                 </span>
