@@ -7,7 +7,7 @@ import { getAllProjects, getProjectBySlug, type Project } from "@/lib/projects"
 
 export const dynamic = "force-dynamic"
 
-const RELATED_COUNT = 3
+const RELATED_COUNT = 4
 
 function pickRandom(items: Project[], count: number): Project[] {
   const pool = [...items]

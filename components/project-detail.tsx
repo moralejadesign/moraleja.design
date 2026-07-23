@@ -256,7 +256,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
           <span>Back</span>
         </Link>
 
-        <div className="mb-8 flex flex-wrap items-center gap-3">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <h1
             ref={titleRef}
             className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl"
@@ -264,7 +264,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
             {project.title}
           </h1>
           {project.tools && project.tools.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-end gap-2">
               {project.tools.map((tool) => (
                 <span
                   key={tool}

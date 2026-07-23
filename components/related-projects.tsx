@@ -20,7 +20,7 @@ export function RelatedProjects({ projects }: RelatedProjectsProps) {
     <div className="w-full border-t border-border px-3 py-8 md:px-8 md:py-12 lg:px-12">
       <div className="mx-auto max-w-7xl">
         <h2 className="mb-10 text-xl font-semibold tracking-tight">Keep Exploring</h2>
-        <MasonryGrid>
+        <MasonryGrid className="grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
           {projects.map((project) => (
             <ProjectCard
               key={project.id}
