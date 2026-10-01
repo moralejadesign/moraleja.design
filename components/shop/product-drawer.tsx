@@ -173,7 +173,7 @@ function DrawerContent({ product, onClose, showCloseButton }: DrawerContentProps
           className="object-cover"
         />
         {product.isFree && (
-          <div className="absolute top-3 left-3 px-2 py-0.5 bg-green-500/90 text-white text-[10px] font-medium uppercase tracking-wider">
+          <div className="absolute top-3 left-3 px-2 py-0.5 bg-brand-accent text-black text-[10px] font-medium uppercase tracking-wider">
             Free
           </div>
         )}
@@ -181,7 +181,7 @@ function DrawerContent({ product, onClose, showCloseButton }: DrawerContentProps
 
       {/* Title */}
       <div>
-        <h2 className="text-xl font-bold tracking-tight">{product.title}</h2>
+        <h2 className="text-xl font-normal tracking-tight">{product.title}</h2>
         {product.description && (
           <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
             {product.description}
@@ -205,7 +205,7 @@ function DrawerContent({ product, onClose, showCloseButton }: DrawerContentProps
 
       {/* Downloads */}
       <div className="pt-3 border-t border-border">
-        <h3 className="text-sm font-medium mb-3">
+        <h3 className="text-sm font-normal mb-3">
           Downloads ({product.variants.length})
         </h3>
 
@@ -241,7 +241,7 @@ function DrawerContent({ product, onClose, showCloseButton }: DrawerContentProps
                     disabled={isDownloading}
                     className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors ${
                       isDownloaded
-                        ? "bg-green-500/10 text-green-600 border border-green-500/30"
+                        ? "bg-brand-accent/10 text-brand-ink border border-brand-accent/30"
                         : "bg-foreground text-background hover:bg-foreground/90"
                     } disabled:opacity-50`}
                   >

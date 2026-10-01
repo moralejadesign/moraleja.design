@@ -1,9 +1,7 @@
 "use client";
 
 import type { Project } from "@/lib/projects";
-import { MasonryGrid } from "@/components/masonry";
-import { ProjectCard } from "@/components/project-card";
-import { useIsBackNavigation } from "@/hooks/use-navigation-type";
+import { CaseCard } from "@/components/case-card";
 import { useProjectNavigation } from "@/hooks/use-project-navigation";
 
 interface HomeGridProps {
@@ -11,29 +9,22 @@ interface HomeGridProps {
 }
 
 /**
- * Home page grid displaying project cards with click-to-navigate transitions.
+ * Single-column list of case-study cards with click-to-navigate transitions.
  */
 export function HomeGrid({ projects }: HomeGridProps) {
-  const { isMobile, handlePrefetch, handleProjectClick } = useProjectNavigation();
-  const isBackNav = useIsBackNavigation();
+  const { handlePrefetch, handleProjectClick } = useProjectNavigation();
 
   return (
-    <div className="w-full px-3 py-8 md:px-8 md:py-12 lg:px-12">
-      <div className="mx-auto max-w-7xl">
-        <MasonryGrid>
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              isMobile={isMobile}
-              onNavigate={handleProjectClick}
-              onPrefetch={handlePrefetch}
-              skipLoadingAnimation={isBackNav}
-            />
-          ))}
-        </MasonryGrid>
-      </div>
+    <div className="flex flex-col gap-3 sm:gap-5">
+      {projects.map((project, index) => (
+        <CaseCard
+          key={project.id}
+          project={project}
+          priority={index === 0}
+          onNavigate={handleProjectClick}
+          onPrefetch={handlePrefetch}
+        />
+      ))}
     </div>
   );
 }
-

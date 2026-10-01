@@ -44,7 +44,7 @@ function LabCard({ item }: { item: LabProject }) {
       </div>
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-medium leading-snug">{item.title}</h3>
+          <h3 className="font-normal leading-snug">{item.title}</h3>
           <span className={`flex-shrink-0 px-2 py-0.5 text-[11px] font-medium rounded-full ${toolColor}`}>
             {item.tool}
           </span>
@@ -72,7 +72,7 @@ function LabSection({ title, description, items }: SectionProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-xl font-normal tracking-tight">{title}</h2>
         <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

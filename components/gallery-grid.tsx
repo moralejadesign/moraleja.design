@@ -479,7 +479,7 @@ function AssetCardContent({ asset, skipLoadingAnimation }: AssetCardContentProps
       {/* Info overlay at bottom */}
       <div className="absolute bottom-0 left-0 right-0 p-2 md:p-4">
         {asset.title && (
-          <h3 className="text-xs font-semibold tracking-wide text-white md:text-sm drop-shadow-lg">
+          <h3 className="text-xs font-normal tracking-wide text-white md:text-sm drop-shadow-lg">
             {asset.title}
           </h3>
         )}

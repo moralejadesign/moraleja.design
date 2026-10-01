@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useEffect, useRef, useLayoutEffect } from "react"
 import type { Project, BlockType } from "@/db/schema"
 import { ZoomTransition } from "@/components/zoom-transition"
+import { LazyVideo } from "@/components/lazy-video"
 import { useTransitionStore } from "@/stores/transition"
 import { useHeaderStore } from "@/stores/header"
 import { getBlobUrl } from "@/lib/config"
@@ -26,7 +27,7 @@ function BlockRenderer({ block, priority = false }: { block: BlockType; priority
             alt={block.alt || "Project image"}
             width={1920}
             height={1080}
-            sizes="(max-width: 768px) 100vw, 80vw"
+            sizes="(max-width: 1024px) 100vw, 960px"
             quality={85}
             priority={priority}
             className="w-full h-auto"
@@ -109,13 +110,11 @@ function BlockRenderer({ block, priority = false }: { block: BlockType; priority
       if (!block.url) return null
       return (
         <div className={`relative overflow-hidden rounded-lg ${videoSizeClasses[size]}`}>
-          <video
+          <LazyVideo
             src={block.url}
             className={`w-full ${videoAspectClasses[aspectRatio]} ${aspectRatio === "auto" ? "h-auto" : "object-cover"}`}
-            autoPlay={block.autoplay ?? true}
+            autoplay={block.autoplay ?? true}
             muted={block.muted ?? true}
-            loop
-            playsInline
             controls={!(block.muted ?? true)}
           />
         </div>
@@ -134,13 +133,11 @@ function BlockRenderer({ block, priority = false }: { block: BlockType; priority
           {block.videos.map((video, idx) => (
             <div key={idx} className="relative overflow-hidden rounded-lg">
               {video.url ? (
-                <video
+                <LazyVideo
                   src={video.url}
                   className={`w-full ${rowAspectClasses[block.aspectRatio ?? "16:9"]} object-cover`}
-                  autoPlay={block.autoplay ?? false}
+                  autoplay={block.autoplay ?? false}
                   muted={video.muted ?? true}
-                  loop
-                  playsInline
                   controls={!(block.autoplay ?? false) || !(video.muted ?? true)}
                 />
               ) : (
@@ -161,8 +158,8 @@ function BlockRenderer({ block, priority = false }: { block: BlockType; priority
     case "heading":
       const HeadingTag = `h${block.level}` as "h1" | "h2" | "h3"
       const headingClasses = {
-        1: "text-4xl font-bold",
-        2: "text-3xl font-semibold",
+        1: "text-4xl font-normal",
+        2: "text-3xl font-normal",
         3: "text-2xl font-medium",
       }
       return (
@@ -218,7 +215,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
       if (!titleRef.current) return
       
       const titleRect = titleRef.current.getBoundingClientRect()
-      const headerHeight = 64
+      const headerHeight = 56
       const titleBehindHeader = titleRect.bottom < headerHeight
       setShowProjectTitle(titleBehindHeader)
     }
@@ -247,28 +244,32 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
 
   return (
     <ZoomTransition>
-      <div className="w-full px-4 py-12 md:px-8 lg:px-12">
+      <div className="w-full">
         <Link
           href="/"
-          className="mb-8 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="mb-6 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-brand-ink"
         >
           <ArrowLeft className="h-3 w-3" />
-          <span>Back</span>
+          <span>Back to work</span>
         </Link>
 
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-8 flex flex-col items-start gap-3">
           <h1
             ref={titleRef}
-            className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl"
+            className="text-[32px] leading-[1.1] tracking-[-0.4px] text-foreground md:text-[40px]"
           >
             {project.title}
+            {project.tagline && <> {project.tagline}</>}
           </h1>
-          {project.tools && project.tools.length > 0 && (
-            <div className="flex flex-wrap justify-end gap-2">
-              {project.tools.map((tool) => (
+          {(project.category || (project.tools && project.tools.length > 0)) && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              {project.category && (
+                <span className="font-light tracking-[0.16px] text-muted-foreground">{project.category}</span>
+              )}
+              {project.tools?.map((tool) => (
                 <span
                   key={tool}
-                  className="px-2.5 py-1 text-xs font-medium uppercase tracking-wide rounded-full bg-muted text-muted-foreground"
+                  className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground"
                 >
                   {tool}
                 </span>

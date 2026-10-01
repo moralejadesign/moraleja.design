@@ -427,14 +427,14 @@ function ProductCardContent({ product, skipLoadingAnimation }: ProductCardConten
 
       {/* Free badge */}
       {product.isFree && (
-        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-green-500/90 text-white text-[10px] font-medium uppercase tracking-wider">
+        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-accent text-black text-[10px] font-medium uppercase tracking-wider">
           Free
         </div>
       )}
 
       {/* Info overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-2 md:p-4 bg-gradient-to-t from-black/60 to-transparent">
-        <h3 className="text-xs font-semibold tracking-wide text-white md:text-sm drop-shadow-lg">
+        <h3 className="text-xs font-normal tracking-wide text-white md:text-sm drop-shadow-lg">
           {product.title}
         </h3>
         {product.variants && product.variants.length > 0 && (

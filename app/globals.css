@@ -7,6 +7,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-brand-accent: var(--brand-accent);
+  --color-brand-ink: var(--brand-ink);
   --font-sans: var(--font-monoblock);
   --font-mono: var(--font-monoblock);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -49,11 +50,13 @@
 
 :root {
   --radius: 0.625rem;
-  --header-height: 64px;
+  --header-height: 56px;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
-  /* Brand accent - Spring Green #00ff7f */
-  --brand-accent: oklch(0.87 0.2 157);
+  /* Brand accent - White; highlighted words use bold instead of color */
+  --brand-accent: #ffffff;
+  /* Accent as text on the light background, darkened for contrast */
+  --brand-ink: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -88,8 +91,8 @@
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  /* Brand accent - slightly muted for dark mode */
-  --brand-accent: oklch(0.75 0.18 157);
+  --brand-accent: #ffffff;
+  --brand-ink: #ffffff;
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
@@ -124,7 +127,6 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    color-scheme: light dark;
   }
   body {
     @apply bg-background text-foreground;
@@ -230,41 +232,6 @@
   right: var(--cross-half-size);
 }
 
-::view-transition-old(root),
-.dark::view-transition-old(root) {
-  animation: none;
-}
-
-::view-transition-group(root) {
-  animation-duration: 0.5s;
-}
-
-::view-transition-new(root) {
-  animation-name: reveal-light;
-}
-
-.dark::view-transition-new(root) {
-  animation-name: reveal-dark;
-}
-
-@keyframes reveal-dark {
-  from {
-    clip-path: polygon(-30% 0, -30% 0, -15% 100%, -10% 115%);
-  }
-  to {
-    clip-path: polygon(-30% 0, 130% 0, 115% 100%, -10% 115%);
-  }
-}
-
-@keyframes reveal-light {
-  from {
-    clip-path: polygon(130% 0, 130% 0, 115% 100%, 110% 115%);
-  }
-  to {
-    clip-path: polygon(130% 0, -30% 0, -15% 100%, 110% 115%);
-  }
-}
-
 /* Hide scrollbar utility */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -272,13 +239,6 @@
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
-}
-
-/* Header height responsive */
-@media (min-width: 768px) {
-  :root {
-    --header-height: 80px;
-  }
 }
 
 /* Safe area padding for mobile bottom sheets */

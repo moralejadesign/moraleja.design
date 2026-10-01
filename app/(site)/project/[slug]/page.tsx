@@ -1,24 +1,26 @@
+import { Suspense } from "react"
 import { notFound } from "next/navigation"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { ProjectDetail } from "@/components/project-detail"
 import { RelatedProjects } from "@/components/related-projects"
-import { getAllProjects, getProjectBySlug, type Project } from "@/lib/projects"
-
-export const dynamic = "force-dynamic"
+import { getAllProjects, getAllProjectSlugs, getProjectBySlug, type Project } from "@/lib/projects"
 
 const RELATED_COUNT = 4
 
-function pickRandom(items: Project[], count: number): Project[] {
-  const pool = [...items]
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[pool[i], pool[j]] = [pool[j], pool[i]]
-  }
-  return pool.slice(0, count)
+type Params = { params: Promise<{ slug: string }> }
+
+export async function generateStaticParams() {
+  const slugs = await getAllProjectSlugs()
+  return slugs.map((slug) => ({ slug }))
 }
 
-export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
+/** The projects that follow this one in portfolio order, wrapping around. */
+function nextProjects(all: Project[], current: Project, count: number): Project[] {
+  const index = all.findIndex((p) => p.id === current.id)
+  const rest = [...all.slice(index + 1), ...all.slice(0, index)]
+  return rest.slice(0, count)
+}
+
+async function ProjectContent({ params }: Params) {
   const { slug } = await params
   const project = await getProjectBySlug(slug)
 
@@ -27,17 +29,19 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   }
 
   const allProjects = await getAllProjects()
-  const otherProjects = allProjects.filter((p) => p.id !== project.id)
-  const relatedProjects = pickRandom(otherProjects, RELATED_COUNT)
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 bg-background pt-16 md:pt-20">
-        <ProjectDetail project={project} />
-        <RelatedProjects projects={relatedProjects} />
-      </main>
-      <Footer />
-    </div>
+    <>
+      <ProjectDetail project={project} />
+      <RelatedProjects projects={nextProjects(allProjects, project, RELATED_COUNT)} />
+    </>
+  )
+}
+
+export default function ProjectPage({ params }: Params) {
+  return (
+    <Suspense fallback={<div className="min-h-[60vh]" aria-busy="true" />}>
+      <ProjectContent params={params} />
+    </Suspense>
   )
 }

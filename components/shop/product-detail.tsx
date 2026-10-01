@@ -56,31 +56,31 @@ export function ProductDetail({ product }: ProductDetailProps) {
   };
 
   return (
-    <div className="w-full px-3 py-8 md:px-8 md:py-12 lg:px-12">
-      <div className="mx-auto max-w-6xl">
+    <div className="w-full">
+      <div>
         {/* Back button */}
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-brand-ink transition-colors mb-6"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3 w-3" />
           Back to Shop
         </Link>
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid xl:grid-cols-2 gap-8">
           {/* Product Image */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-muted">
             <Image
               src={product.thumbnail}
               alt={product.title}
               fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              sizes="(max-width: 1280px) 100vw, 480px"
               quality={90}
               priority
               className="object-cover"
             />
             {product.isFree && (
-              <div className="absolute top-4 left-4 px-2.5 py-1 bg-green-500/90 text-white text-xs font-medium uppercase tracking-wider">
+              <div className="absolute top-4 left-4 px-2.5 py-1 bg-brand-accent text-black text-xs font-medium uppercase tracking-wider">
                 Free Download
               </div>
             )}
@@ -92,7 +92,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <span className="text-xs uppercase tracking-wider text-muted-foreground">
                 {product.type}
               </span>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight mt-1">
+              <h1 className="mt-1 text-[32px] font-normal leading-[1.1] tracking-[-0.4px] text-foreground md:text-[40px]">
                 {product.title}
               </h1>
             </div>
@@ -119,7 +119,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
             {/* Download Section */}
             <div className="pt-4 border-t border-border">
-              <h2 className="text-sm font-semibold mb-4">
+              <h2 className="text-sm font-normal mb-4">
                 Available Downloads ({product.variants.length})
               </h2>
 
@@ -157,7 +157,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                           disabled={isDownloading}
                           className={`inline-flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                             isDownloaded
-                              ? "bg-green-500/10 text-green-600 border border-green-500/30"
+                              ? "bg-brand-accent/10 text-brand-ink border border-brand-accent/30"
                               : "bg-foreground text-background hover:bg-foreground/90"
                           } disabled:opacity-50`}
                         >

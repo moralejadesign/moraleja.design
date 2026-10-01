@@ -2,25 +2,9 @@
 
 import { Drawer } from "vaul"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
-import { ThemeSwitcher } from "./theme-switcher"
-
-const MenuIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="4" y1="8" x2="20" y2="8" />
-    <line x1="4" y1="16" x2="20" y2="16" />
-  </svg>
-)
+import { navLinks, isActiveLink, socialLinks, email } from "@/lib/site"
+import { WithPathname } from "./with-pathname"
 
 const CloseIcon = () => (
   <svg
@@ -38,14 +22,6 @@ const CloseIcon = () => (
   </svg>
 )
 
-const navLinks = [
-  { href: "/", label: "Work" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/lab", label: "Lab" },
-  { href: "/shop", label: "Shop", isNew: true },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-]
 
 interface MobileMenuProps {
   open: boolean
@@ -53,7 +29,6 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
-  const pathname = usePathname()
   const [showNewBadge, setShowNewBadge] = useState(false)
 
   useEffect(() => {
@@ -94,57 +69,52 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps) {
 
           {/* Navigation links */}
           <nav className="flex flex-1 flex-col px-6 py-4">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href || 
-                (link.href !== "/" && pathname.startsWith(link.href))
-              const isShop = link.href === "/shop"
-              
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => isShop ? handleShopClick() : onOpenChange(false)}
-                  className={`group relative flex items-center py-3 text-sm font-medium tracking-wide transition-colors ${
-                    isActive
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {isActive && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-1 h-1 rounded-full bg-brand-accent" />
-                  )}
-                  {link.label}
-                  {isShop && showNewBadge && (
-                    <span className="ml-2 rounded-full bg-brand-accent/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-accent">
-                      New
-                    </span>
-                  )}
-                </Link>
-              )
-            })}
+            <WithPathname>
+              {(pathname) =>
+                navLinks.map((link) => {
+                  const isActive = isActiveLink(pathname, link.href)
+                  const isShop = link.href === "/shop"
+                  
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => isShop ? handleShopClick() : onOpenChange(false)}
+                      className={`group relative flex items-center py-3 text-sm font-medium tracking-wide transition-colors ${
+                        isActive
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {isActive && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-1 h-1 rounded-full bg-brand-accent" />
+                      )}
+                      {link.label}
+                      {isShop && showNewBadge && (
+                        <span className="ml-2 rounded-full bg-brand-accent/15 px-2 py-0.5 text-[10px] font-normal uppercase tracking-wider text-foreground">
+                          New
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })
+              }
+            </WithPathname>
           </nav>
 
           {/* Footer with theme switcher */}
-          <div className="px-6 py-4 border-t border-border">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground/60 font-mono uppercase tracking-wider">Theme</span>
-              <ThemeSwitcher />
+          <div className="flex flex-col gap-2 border-t border-border px-6 py-6 text-sm">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
+              {socialLinks.map((link) => (
+                <a key={link.name} href={link.href} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-brand-ink">
+                  {link.name}
+                </a>
+              ))}
             </div>
+            <a href={`mailto:${email}`} className="text-foreground">{email}</a>
           </div>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
-  )
-}
-
-export function MobileMenuTrigger({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground md:hidden"
-      aria-label="Open menu"
-    >
-      <MenuIcon />
-    </button>
   )
 }

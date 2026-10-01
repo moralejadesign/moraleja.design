@@ -1,12 +1,10 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import { PageIntro } from "@/components/page-intro";
 import { ShopGrid } from "@/components/shop/shop-grid";
 import { db, products, productVariants } from "@/db";
-import { desc, asc, eq } from "drizzle-orm";
-
-export const dynamic = "force-dynamic";
+import { desc, asc, eq, inArray } from "drizzle-orm";
+import { cacheLife, cacheTag } from "next/cache";
 
 export const metadata: Metadata = {
   title: "Shop",
@@ -14,27 +12,33 @@ export const metadata: Metadata = {
 };
 
 async function getProducts() {
+  "use cache";
+  cacheLife("max");
+  cacheTag("products");
   const allProducts = await db
     .select()
     .from(products)
     .where(eq(products.isPublished, true))
     .orderBy(asc(products.position), desc(products.createdAt));
 
-  // Fetch variants for each product
-  const productsWithVariants = await Promise.all(
-    allProducts.map(async (product) => {
-      const variants = await db
+  // One query for every product's variants
+  const variants = allProducts.length
+    ? await db
         .select()
         .from(productVariants)
-        .where(eq(productVariants.productId, product.id));
-      return { ...product, variants };
-    })
-  );
+        .where(inArray(productVariants.productId, allProducts.map((product) => product.id)))
+    : [];
 
-  return productsWithVariants;
+  return allProducts.map((product) => ({
+    ...product,
+    variants: variants.filter((variant) => variant.productId === product.id),
+  }));
 }
 
 async function getAllTags() {
+  "use cache";
+  cacheLife("max");
+  cacheTag("products");
   const result = await db
     .select({ tags: products.tags })
     .from(products)
@@ -52,24 +56,11 @@ export default async function ShopPage() {
   const [allProducts, allTags] = await Promise.all([getProducts(), getAllTags()]);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 bg-background pt-16 md:pt-20">
-        <div className="w-full px-3 py-8 md:px-8 md:py-12 lg:px-12">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight mb-2">Shop</h1>
-              <p className="text-muted-foreground">
-                Free wallpapers and digital artwork for download
-              </p>
-            </div>
-            <Suspense fallback={<div className="text-muted-foreground">Loading shop...</div>}>
-              <ShopGrid products={allProducts} availableTags={allTags} />
-            </Suspense>
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
+    <>
+      <PageIntro name="Shop" statement="is free artwork to take home." lede="Wallpapers, prints and digital pieces, free to download." />
+      <Suspense fallback={<div className="text-muted-foreground">Loading shop...</div>}>
+        <ShopGrid products={allProducts} availableTags={allTags} />
+      </Suspense>
+    </>
   );
 }

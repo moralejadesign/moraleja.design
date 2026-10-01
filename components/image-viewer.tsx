@@ -253,7 +253,7 @@ export function ImageViewer({
             <div className="text-center space-y-3">
               {/* Title */}
               {asset.title && (
-                <h2 className="text-lg font-medium text-white tracking-wide">
+                <h2 className="text-lg font-normal text-white tracking-wide">
                   {asset.title}
                 </h2>
               )}

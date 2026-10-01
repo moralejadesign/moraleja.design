@@ -1,13 +1,11 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import { PageIntro } from "@/components/page-intro";
 import { LabGrid } from "@/components/lab-grid";
 import { db } from "@/db";
 import { labProjects } from "@/db/schema";
 import { asc, desc, eq } from "drizzle-orm";
-
-export const dynamic = "force-dynamic";
+import { cacheLife, cacheTag } from "next/cache";
 
 export const metadata: Metadata = {
   title: "Lab",
@@ -15,6 +13,9 @@ export const metadata: Metadata = {
 };
 
 async function getLabProjects() {
+  "use cache";
+  cacheLife("max");
+  cacheTag("lab");
   return db
     .select()
     .from(labProjects)
@@ -23,6 +24,9 @@ async function getLabProjects() {
 }
 
 async function getAllTags() {
+  "use cache";
+  cacheLife("max");
+  cacheTag("lab");
   const result = await db
     .select({ tags: labProjects.tags })
     .from(labProjects)
@@ -40,24 +44,11 @@ export default async function LabPage() {
   const [items, allTags] = await Promise.all([getLabProjects(), getAllTags()]);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 bg-background pt-16 md:pt-20">
-        <div className="w-full px-3 py-8 md:px-8 md:py-12 lg:px-12">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight mb-2">Lab</h1>
-              <p className="text-muted-foreground">
-                Experiments with AI tools — code and creative
-              </p>
-            </div>
-            <Suspense fallback={<div className="text-muted-foreground">Loading lab...</div>}>
-              <LabGrid items={items} availableTags={allTags} />
-            </Suspense>
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
+    <>
+      <PageIntro name="Lab" statement="is where we experiment." lede="Code and creative experiments made with AI tools." />
+      <Suspense fallback={<div className="text-muted-foreground">Loading lab...</div>}>
+        <LabGrid items={items} availableTags={allTags} />
+      </Suspense>
+    </>
   );
 }

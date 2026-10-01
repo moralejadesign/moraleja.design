@@ -1,18 +1,19 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { ProductDetail } from "@/components/shop/product-detail";
 import { db, products, productVariants } from "@/db";
 import { eq, and } from "drizzle-orm";
-
-export const dynamic = "force-dynamic";
+import { cacheLife, cacheTag } from "next/cache";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 async function getProduct(slug: string) {
+  "use cache";
+  cacheLife("max");
+  cacheTag("products");
   const [product] = await db
     .select()
     .from(products)
@@ -26,6 +27,16 @@ async function getProduct(slug: string) {
     .where(eq(productVariants.productId, product.id));
 
   return { ...product, variants };
+}
+
+async function getPublishedSlugs() {
+  "use cache";
+  cacheLife("max");
+  cacheTag("products");
+  return db
+    .select({ slug: products.slug })
+    .from(products)
+    .where(eq(products.isPublished, true));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -49,7 +60,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function ProductPage({ params }: PageProps) {
+export async function generateStaticParams() {
+  return getPublishedSlugs();
+}
+
+async function ProductContent({ params }: PageProps) {
   const { slug } = await params;
   const product = await getProduct(slug);
 
@@ -57,13 +72,13 @@ export default async function ProductPage({ params }: PageProps) {
     notFound();
   }
 
+  return <ProductDetail product={product} />;
+}
+
+export default function ProductPage({ params }: PageProps) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 bg-background pt-16 md:pt-20">
-        <ProductDetail product={product} />
-      </main>
-      <Footer />
-    </div>
+    <Suspense fallback={<div className="min-h-[60vh]" aria-busy="true" />}>
+      <ProductContent params={params} />
+    </Suspense>
   );
 }

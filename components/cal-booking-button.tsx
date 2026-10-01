@@ -6,7 +6,7 @@ export function CalBookingButton() {
       href="https://cal.com/moraleja/15min"
       target="_blank"
       rel="noopener noreferrer"
-      className="card-border block w-full h-full p-6 md:p-8 text-left transition-colors hover:border-foreground/30"
+      className="card-border block w-full h-full rounded-lg p-6 md:p-8 text-left transition-colors hover:border-foreground/30"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
