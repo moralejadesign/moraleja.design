@@ -7,7 +7,7 @@ import { ArrowLeft, Save, Loader2, Eye, Check, Cloud } from "lucide-react";
 import Link from "next/link";
 import type { Project, BlockType } from "@/db/schema";
 import { BlockEditor } from "./block-editor";
-import { ImageField } from "./image-uploader";
+import { ImageField, VideoField } from "./image-uploader";
 import { TagSelector } from "./tag-selector";
 import { PREDEFINED_TOOLS } from "@/lib/tools";
 
@@ -24,6 +24,10 @@ type ProjectInput = {
   textContrast: string;
   blocks: BlockType[];
   tools: string[];
+  background: string | null;
+  tagline: string | null;
+  category: string | null;
+  showreelVideo: string | null;
 };
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -66,6 +70,10 @@ export function ProjectForm({ project, isNew }: ProjectFormProps) {
     textContrast: project?.textContrast ?? "light",
     blocks: (project?.blocks as BlockType[]) ?? [],
     tools: project?.tools ?? [],
+    background: project?.background ?? null,
+    tagline: project?.tagline ?? null,
+    category: project?.category ?? null,
+    showreelVideo: project?.showreelVideo ?? null,
   });
 
   const [hasChanges, setHasChanges] = useState(false);
@@ -83,7 +91,11 @@ export function ProjectForm({ project, isNew }: ProjectFormProps) {
         formData.heightRatio !== project.heightRatio ||
         formData.textContrast !== project.textContrast ||
         JSON.stringify(formData.blocks) !== JSON.stringify(project.blocks) ||
-        JSON.stringify(formData.tools) !== JSON.stringify(project.tools ?? []);
+        JSON.stringify(formData.tools) !== JSON.stringify(project.tools ?? []) ||
+        formData.background !== (project.background ?? null) ||
+        formData.tagline !== (project.tagline ?? null) ||
+        formData.category !== (project.category ?? null) ||
+        formData.showreelVideo !== (project.showreelVideo ?? null);
       setHasChanges(hasChanged);
     } else {
       setHasChanges(formData.title.length > 0);
@@ -331,6 +343,81 @@ export function ProjectForm({ project, isNew }: ProjectFormProps) {
               predefinedOptions={PREDEFINED_TOOLS}
               customPlaceholder="Add custom tool..."
             />
+          </div>
+
+          <div className="space-y-4 p-6 border border-border">
+            <h2 className="font-semibold">Showreel Video</h2>
+            <p className="text-xs text-muted-foreground">
+              Plays in the home page reel; clicking it opens this project. Leave empty to skip.
+            </p>
+            <VideoField
+              value={formData.showreelVideo ?? ""}
+              onChange={(url) => updateField("showreelVideo", url || null)}
+              projectId={project?.id}
+            />
+            <input
+              type="url"
+              value={formData.showreelVideo ?? ""}
+              onChange={(e) => updateField("showreelVideo", e.target.value || null)}
+              placeholder="…or paste an uploaded video URL"
+              className="w-full px-3 py-2 bg-background border border-border text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20"
+            />
+          </div>
+
+          <div className="space-y-4 p-6 border border-border">
+            <h2 className="font-semibold">Home Card</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                  Tagline
+                </label>
+                <textarea
+                  value={formData.tagline ?? ""}
+                  onChange={(e) => updateField("tagline", e.target.value || null)}
+                  rows={2}
+                  placeholder={formData.title || "One sentence about the project"}
+                  className="w-full px-3 py-2 bg-background border border-border focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Shown on the card instead of the title
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                  Category
+                </label>
+                <input
+                  type="text"
+                  value={formData.category ?? ""}
+                  onChange={(e) => updateField("category", e.target.value || null)}
+                  placeholder="Brand Identity, Motion..."
+                  className="w-full px-3 py-2 bg-background border border-border focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Falls back to the tools list when empty
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                  Background
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={formData.background ?? "#1a1a1a"}
+                    onChange={(e) => updateField("background", e.target.value)}
+                    className="h-10 w-12 shrink-0 cursor-pointer border border-border bg-background"
+                  />
+                  <input
+                    type="text"
+                    value={formData.background ?? ""}
+                    onChange={(e) => updateField("background", e.target.value || null)}
+                    placeholder="Theme card color"
+                    className="flex-1 px-3 py-2 bg-background border border-border focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-4 p-6 border border-border">

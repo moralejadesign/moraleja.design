@@ -20,6 +20,12 @@ export const projects = pgTable("projects", {
   textContrast: varchar("text_contrast", { length: 10 }).default("light"),
   blocks: jsonb("blocks").$type<BlockType[]>().notNull().default([]),
   tools: text("tools").array(),
+  // Case-study card on the home page
+  background: varchar("background", { length: 32 }),
+  tagline: text("tagline"),
+  category: varchar("category", { length: 255 }),
+  // Plays in the home showreel; clicking it opens this project
+  showreelVideo: text("showreel_video"),
   position: integer("position").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
