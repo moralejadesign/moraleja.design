@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { labProjects } from "@/db/schema";
 import { asc, desc, eq, sql } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function GET(request: Request) {
   try {
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       })
       .returning();
 
+    revalidateContent("lab");
     return NextResponse.json(newItem, { status: 201 });
   } catch (error) {
     console.error("Failed to create lab project:", error);

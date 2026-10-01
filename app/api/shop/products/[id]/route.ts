@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db, products, productVariants } from "@/db";
 import { eq } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function GET(
   request: Request,
@@ -89,6 +90,7 @@ export async function PATCH(
       .from(productVariants)
       .where(eq(productVariants.productId, productId));
 
+    revalidateContent("products");
     return NextResponse.json({ ...updatedProduct, variants });
   } catch (error) {
     console.error("Failed to update product:", error);
@@ -120,6 +122,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
+    revalidateContent("products");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete product:", error);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db, projects } from "@/db";
 import { asc, sql } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function GET() {
   try {
@@ -43,10 +44,15 @@ export async function POST(request: Request) {
         textContrast: body.textContrast ?? "light",
         blocks: body.blocks ?? [],
         tools: body.tools ?? [],
+        background: body.background ?? null,
+        tagline: body.tagline ?? null,
+        category: body.category ?? null,
+        showreelVideo: body.showreelVideo ?? null,
         position: nextPosition,
       })
       .returning();
 
+    revalidateContent("projects");
     return NextResponse.json(newProject, { status: 201 });
   } catch (error) {
     console.error("Failed to create project:", error);

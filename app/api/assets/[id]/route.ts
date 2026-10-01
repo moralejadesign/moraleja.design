@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db, assets } from "@/db";
 import { eq } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function GET(
   request: Request,
@@ -61,6 +62,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
 
+    revalidateContent("assets");
     return NextResponse.json(updatedAsset);
   } catch (error) {
     console.error("Failed to update asset:", error);
@@ -91,6 +93,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
 
+    revalidateContent("assets");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete asset:", error);

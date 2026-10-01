@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db, products, productVariants } from "@/db";
 import { asc, desc, eq, sql } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function GET(request: Request) {
   try {
@@ -99,6 +100,7 @@ export async function POST(request: Request) {
       .from(productVariants)
       .where(eq(productVariants.productId, newProduct.id));
 
+    revalidateContent("products");
     return NextResponse.json({ ...newProduct, variants }, { status: 201 });
   } catch (error) {
     console.error("Failed to create product:", error);

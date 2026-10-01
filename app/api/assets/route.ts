@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db, assets } from "@/db";
 import { desc, eq, ilike, or, sql, arrayContains } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function GET(request: Request) {
   try {
@@ -102,6 +103,7 @@ export async function POST(request: Request) {
       })
       .returning();
 
+    revalidateContent("assets");
     return NextResponse.json(newAsset, { status: 201 });
   } catch (error) {
     console.error("Failed to create asset:", error);

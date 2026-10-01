@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db, projects } from "@/db";
 import { eq } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function GET(
   request: Request,
@@ -55,6 +56,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
+    revalidateContent("projects");
     return NextResponse.json(updatedProject);
   } catch (error) {
     console.error("Failed to update project:", error);
@@ -85,6 +87,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
+    revalidateContent("projects");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete project:", error);

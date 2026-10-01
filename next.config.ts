@@ -5,6 +5,10 @@ const blobBaseUrl = process.env.NEXT_PUBLIC_BLOB_BASE_URL || "https://xw2hxxlahh
 const blobHostname = new URL(blobBaseUrl).hostname;
 
 const nextConfig: NextConfig = {
+  // Pages ship as prerendered static shells; data is cached with "use cache"
+  // and refreshed on demand when the admin saves (lib/cache-tags.ts).
+  cacheComponents: true,
+  partialPrefetching: true,
   experimental: {
     serverActions: {
       bodySizeLimit: "100mb",
@@ -33,6 +37,10 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    // Dev chunks keep the same filename between edits, so caching them forever
+    // stops the browser from ever picking up changes.
+    if (process.env.NODE_ENV !== "production") return [];
+
     return [
       {
         source: "/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico)",

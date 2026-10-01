@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { labProjects } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function POST(request: Request) {
   const { userId } = await auth();
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
       )
     );
 
+    revalidateContent("lab");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to reorder lab projects:", error);

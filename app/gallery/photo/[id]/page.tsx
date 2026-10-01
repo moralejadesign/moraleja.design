@@ -1,16 +1,19 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { db, assets, projects } from "@/db";
 import { eq, sql, desc, and } from "drizzle-orm";
 import { GalleryPhotoView } from "./gallery-photo-view";
-
-export const dynamic = "force-dynamic";
+import { cacheLife, cacheTag } from "next/cache";
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
 async function getAsset(id: number) {
+  "use cache";
+  cacheLife("max");
+  cacheTag("assets", "projects");
   const result = await db
     .select({
       id: assets.id,
@@ -33,6 +36,9 @@ async function getAsset(id: number) {
 }
 
 async function getAllAssets() {
+  "use cache";
+  cacheLife("max");
+  cacheTag("assets", "projects");
   return await db
     .select({
       id: assets.id,
@@ -77,7 +83,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function GalleryPhotoPage({ params }: Props) {
+// The newest photos are prerendered; the rest are built on first visit
+export async function generateStaticParams() {
+  const allAssets = await getAllAssets();
+  return allAssets.slice(0, 12).map((asset) => ({ id: String(asset.id) }));
+}
+
+async function PhotoContent({ params }: Props) {
   const { id } = await params;
   const assetId = parseInt(id, 10);
 
@@ -95,4 +107,12 @@ export default async function GalleryPhotoPage({ params }: Props) {
   }
 
   return <GalleryPhotoView asset={asset} assets={allAssets} />;
+}
+
+export default function GalleryPhotoPage({ params }: Props) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" aria-busy="true" />}>
+      <PhotoContent params={params} />
+    </Suspense>
+  );
 }

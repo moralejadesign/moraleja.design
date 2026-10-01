@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db, projects } from "@/db";
 import { eq } from "drizzle-orm";
+import { revalidateContent } from "@/lib/cache-tags";
 
 export async function POST(request: Request) {
   const { userId } = await auth();
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
       )
     );
 
+    revalidateContent("projects");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to reorder projects:", error);
