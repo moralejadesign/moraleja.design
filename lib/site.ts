@@ -26,8 +26,8 @@ export const socialLinks = [
 
 export const email = "hello@moraleja.co"
 
-/** Fallback reel when no project has a showreel video. */
-export const showreel = "https://xw2hxxlahhw8mflm.public.blob.vercel-storage.com/AIH-VideoRecap-1920X1080.mp4"
+/** Home page reel: carousel of project visuals. */
+export const showreel = "/moraleja-projects-carousel.mp4"
 
 export function isActiveLink(pathname: string | null, href: string) {
   if (!pathname) return false

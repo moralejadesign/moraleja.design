@@ -7,9 +7,6 @@ import { showreel } from "@/lib/site"
 
 export default async function Home() {
   const projects = await getAllProjects()
-  const reel = projects
-    .filter((project) => project.showreelVideo)
-    .map((project) => ({ src: project.showreelVideo!, title: project.title, href: `/project/${project.slug}` }))
 
   return (
     <>
@@ -18,7 +15,7 @@ export default async function Home() {
         name="The studio behind brands that can't be ignored."
         lede="We build identities for tech startups and sharpen their visual communication, so their brand is impossible to overlook."
       >
-        <Showreel items={reel.length ? reel : [{ src: showreel }]} />
+        <Showreel items={[{ src: showreel }]} />
       </PageIntro>
 
       <SectionTitle id="work">selected work:</SectionTitle>
