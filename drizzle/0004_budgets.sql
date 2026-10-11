@@ -1,0 +1,40 @@
+CREATE TABLE "budget_phases" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"name" varchar(255) NOT NULL,
+	"content" jsonb NOT NULL,
+	"default_price" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"position" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE "budgets" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"code" varchar(32) NOT NULL,
+	"client_name" varchar(255) NOT NULL,
+	"title" varchar(255),
+	"kind" varchar(20) DEFAULT 'project' NOT NULL,
+	"language" varchar(2) DEFAULT 'es' NOT NULL,
+	"currency" varchar(3) DEFAULT 'USD' NOT NULL,
+	"status" varchar(20) DEFAULT 'draft' NOT NULL,
+	"issue_date" date NOT NULL,
+	"valid_days" integer DEFAULT 30 NOT NULL,
+	"sections" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"total" numeric(14, 2),
+	"show_section_prices" boolean DEFAULT false NOT NULL,
+	"advance_percent" integer DEFAULT 30 NOT NULL,
+	"show_payment_schedule" boolean DEFAULT true NOT NULL,
+	"conditions" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"internal_notes" text,
+	"share_token" varchar(64),
+	"share_pin" varchar(12),
+	"share_enabled" boolean DEFAULT false NOT NULL,
+	"share_failed_attempts" integer DEFAULT 0 NOT NULL,
+	"share_locked_until" timestamp,
+	"share_view_count" integer DEFAULT 0 NOT NULL,
+	"share_last_viewed_at" timestamp,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now(),
+	CONSTRAINT "budgets_code_unique" UNIQUE("code"),
+	CONSTRAINT "budgets_share_token_unique" UNIQUE("share_token")
+);

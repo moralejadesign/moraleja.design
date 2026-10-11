@@ -245,3 +245,15 @@
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
+
+/* Budget PDF: print only the document at full size (components/admin/budget-editor.tsx) */
+@media print {
+  .budget-preview {
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .budget-preview-inner {
+    transform: none !important;
+  }
+}

@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, real, timestamp, jsonb, integer, boolean, decimal } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, real, timestamp, jsonb, integer, boolean, decimal, date } from "drizzle-orm/pg-core";
 
 // Block types with assetId support (url kept as fallback for backwards compatibility)
 export type BlockType = 
@@ -132,3 +132,74 @@ export const labProjects = pgTable("lab_projects", {
 
 export type LabProject = typeof labProjects.$inferSelect;
 export type NewLabProject = typeof labProjects.$inferInsert;
+
+// Budgets (private, admin-only)
+export type BudgetLanguage = "es" | "en";
+export type BudgetCurrency = "USD" | "COP";
+export type BudgetKind = "project" | "retainer";
+export type BudgetStatus = "draft" | "sent" | "approved" | "rejected";
+
+export type BudgetSection = {
+  id: string;
+  title: string;
+  description: string;
+  bullets: string[];
+  deliverable: string;
+  includes: string;
+  duration: string;
+  price: number | null;
+};
+
+// Phase content in one language; a library phase stores both
+export type BudgetPhaseContent = Omit<BudgetSection, "id" | "price">;
+
+export const budgets = pgTable("budgets", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 32 }).notNull().unique(), // e.g. "MOR-2026-014"
+  clientName: varchar("client_name", { length: 255 }).notNull(),
+  // Heading override; defaults to "{CLIENT} BUDGET"
+  title: varchar("title", { length: 255 }),
+  kind: varchar("kind", { length: 20 }).notNull().default("project").$type<BudgetKind>(),
+  language: varchar("language", { length: 2 }).notNull().default("es").$type<BudgetLanguage>(),
+  currency: varchar("currency", { length: 3 }).notNull().default("USD").$type<BudgetCurrency>(),
+  status: varchar("status", { length: 20 }).notNull().default("draft").$type<BudgetStatus>(),
+  issueDate: date("issue_date", { mode: "string" }).notNull(),
+  validDays: integer("valid_days").notNull().default(30),
+  sections: jsonb("sections").$type<BudgetSection[]>().notNull().default([]),
+  // Manual total; null means the sum of section prices
+  total: decimal("total", { precision: 14, scale: 2 }),
+  showSectionPrices: boolean("show_section_prices").notNull().default(false),
+  advancePercent: integer("advance_percent").notNull().default(30),
+  showPaymentSchedule: boolean("show_payment_schedule").notNull().default(true),
+  conditions: jsonb("conditions").$type<string[]>().notNull().default([]),
+  // Never shown to the client
+  internalNotes: text("internal_notes"),
+  // Private client link: /b/{shareToken}, opened with sharePin.
+  // The PIN is kept readable so it can be resent; it only guards this budget,
+  // which lives in the same database anyway.
+  shareToken: varchar("share_token", { length: 64 }).unique(),
+  sharePin: varchar("share_pin", { length: 12 }),
+  shareEnabled: boolean("share_enabled").notNull().default(false),
+  shareFailedAttempts: integer("share_failed_attempts").notNull().default(0),
+  shareLockedUntil: timestamp("share_locked_until"),
+  shareViewCount: integer("share_view_count").notNull().default(0),
+  shareLastViewedAt: timestamp("share_last_viewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type Budget = typeof budgets.$inferSelect;
+export type NewBudget = typeof budgets.$inferInsert;
+
+export const budgetPhases = pgTable("budget_phases", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(), // internal label in the library
+  content: jsonb("content").$type<Record<BudgetLanguage, BudgetPhaseContent>>().notNull(),
+  defaultPrice: jsonb("default_price").$type<Partial<Record<BudgetCurrency, number>>>().notNull().default({}),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type BudgetPhase = typeof budgetPhases.$inferSelect;
+export type NewBudgetPhase = typeof budgetPhases.$inferInsert;

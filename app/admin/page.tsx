@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { FolderOpen, Settings, BarChart3, ShoppingBag, FlaskConical } from "lucide-react";
+import { FolderOpen, Settings, BarChart3, ShoppingBag, FlaskConical, Receipt } from "lucide-react";
 
 export default async function AdminPage() {
   const { userId } = await auth();
@@ -43,6 +43,17 @@ export default async function AdminPage() {
           <h2 className="font-semibold mb-1">Lab</h2>
           <p className="text-sm text-muted-foreground">
             Manage AI tool experiments and projects
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/budgets"
+          className="group p-6 border border-border hover:border-foreground/30 transition-colors"
+        >
+          <Receipt className="h-8 w-8 mb-3 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <h2 className="font-semibold mb-1">Budgets</h2>
+          <p className="text-sm text-muted-foreground">
+            Create private client budgets and export them as PDF
           </p>
         </Link>
 
