@@ -8,7 +8,6 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { budgets } from "@/db/schema";
 import { accessCookieName, hasValidAccess } from "@/lib/budget-share";
-import { budgetFileName } from "@/lib/budgets";
 import { PinForm } from "./pin-form";
 import { SharedBudgetView } from "./shared-budget-view";
 
@@ -58,7 +57,6 @@ async function SharedBudget({ params }: { params: Promise<{ token: string }> }) 
   // Only what the document prints; internal notes never leave the server
   return (
     <SharedBudgetView
-      fileName={budgetFileName(budget)}
       budget={{
         clientName: budget.clientName,
         title: budget.title,

@@ -194,19 +194,20 @@ export function BudgetDocument({ budget }: { budget: BudgetDocumentData }) {
       )}
 
       {/* Footer */}
-      <footer className="relative mt-[56px] flex items-center justify-center gap-6 pb-[110px]">
-        <img src="/budgets/studio-logo.svg" alt="" className="w-[60px]" />
+      <footer className="relative mt-[56px] flex items-center justify-center gap-[33px] pb-[110px]">
+        <img src="/budgets/studio-logo.svg" alt="" className="w-[61px]" />
         <div>
-          <p className="text-[14px] font-medium tracking-[0.2em]">
+          <p className="text-[14px] tracking-[0.165em]">
             {BUDGET_CONTACT.email} · {BUDGET_CONTACT.phone}
           </p>
-          <p className="mt-2 text-[7.5px] tracking-[0.75em] text-white/60">{BUDGET_CONTACT.tagline}</p>
+          <p className="mt-[14px] text-[8.5px] font-medium tracking-[0.88em]">{BUDGET_CONTACT.tagline}</p>
         </div>
       </footer>
+      {/* Only the upper arc shows; the rest hangs below the document */}
       <img
         src="/budgets/wave-corner.svg"
         alt=""
-        className="pointer-events-none absolute -bottom-[20px] -right-[20px] w-[200px] max-w-none -scale-y-100"
+        className="pointer-events-none absolute -bottom-[365px] -right-[40px] w-[380px] max-w-none"
       />
     </article>
   );
