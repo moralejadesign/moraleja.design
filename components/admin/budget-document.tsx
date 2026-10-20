@@ -193,7 +193,15 @@ export function BudgetDocument({ budget }: { budget: BudgetDocumentData }) {
         </div>
       )}
 
-      {/* Footer */}
+      <DocumentFooter />
+    </article>
+  );
+}
+
+/** Contact line and the corner wave that close every Moraleja document. */
+export function DocumentFooter() {
+  return (
+    <>
       <footer className="relative mt-[56px] flex items-center justify-center gap-[33px] pb-[110px]">
         <img src="/budgets/studio-logo.svg" alt="" className="w-[61px]" />
         <div>
@@ -209,6 +217,6 @@ export function BudgetDocument({ budget }: { budget: BudgetDocumentData }) {
         alt=""
         className="pointer-events-none absolute -bottom-[365px] -right-[40px] w-[380px] max-w-none"
       />
-    </article>
+    </>
   );
 }

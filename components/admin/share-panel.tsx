@@ -3,12 +3,27 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, KeyRound, Link2, Loader2, Lock, RefreshCw } from "lucide-react";
-import type { Budget } from "@/db/schema";
+import type { Briefing, Budget } from "@/db/schema";
+import type { ShareAction } from "@/lib/budget-share";
 
-type ShareAction = "create" | "enable" | "disable" | "new-pin" | "new-link" | "unlock";
+type Shareable = Budget | Briefing;
 
-async function updateShare({ id, action }: { id: number; action: ShareAction }): Promise<Budget> {
-  const res = await fetch(`/api/budgets/${id}/share`, {
+/** Where each kind of document is managed and opened by the client. */
+const KINDS = {
+  budget: { api: "/api/budgets", path: "/b", queryKey: "budget" },
+  briefing: { api: "/api/briefings", path: "/f", queryKey: "briefing" },
+} as const;
+
+async function updateShare<T extends Shareable>({
+  api,
+  id,
+  action,
+}: {
+  api: string;
+  id: number;
+  action: ShareAction;
+}): Promise<T> {
+  const res = await fetch(`${api}/${id}/share`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action }),
@@ -51,30 +66,54 @@ function formatDateTime(value: string | Date) {
   });
 }
 
-export function BudgetSharePanel({ budget: initial }: { budget: Budget }) {
+export function BudgetSharePanel({ budget }: { budget: Budget }) {
+  return <SharePanel kind="budget" item={budget} />;
+}
+
+export function BriefingSharePanel({
+  briefing,
+  onUpdated,
+}: {
+  briefing: Briefing;
+  onUpdated?: (briefing: Briefing) => void;
+}) {
+  return <SharePanel kind="briefing" item={briefing} onUpdated={onUpdated} />;
+}
+
+function SharePanel<T extends Shareable>({
+  kind,
+  item: initial,
+  onUpdated,
+}: {
+  kind: keyof typeof KINDS;
+  item: T;
+  onUpdated?: (item: T) => void;
+}) {
   const queryClient = useQueryClient();
-  const [budget, setBudget] = useState(initial);
+  const [item, setItem] = useState(initial);
+  const config = KINDS[kind];
   const [origin, setOrigin] = useState("");
   // Read the clock after mount; Cache Components can't prerender `new Date()`
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => setOrigin(window.location.origin), []);
-  useEffect(() => setNow(Date.now()), [budget]);
+  useEffect(() => setNow(Date.now()), [item]);
 
   const mutation = useMutation({
-    mutationFn: updateShare,
+    mutationFn: (action: ShareAction) => updateShare<T>({ api: config.api, id: item.id, action }),
     onSuccess: (updated) => {
-      setBudget(updated);
-      queryClient.setQueryData(["budget", String(updated.id)], updated);
+      setItem(updated);
+      queryClient.setQueryData([config.queryKey, String(updated.id)], updated);
+      onUpdated?.(updated);
     },
   });
 
-  const run = (action: ShareAction) => mutation.mutate({ id: budget.id, action });
-  const link = budget.shareToken ? `${origin}/b/${budget.shareToken}` : "";
+  const run = (action: ShareAction) => mutation.mutate(action);
+  const link = item.shareToken ? `${origin}${config.path}/${item.shareToken}` : "";
   const isLocked =
-    now !== null && budget.shareLockedUntil !== null && new Date(budget.shareLockedUntil).getTime() > now;
+    now !== null && item.shareLockedUntil !== null && new Date(item.shareLockedUntil).getTime() > now;
 
-  if (!budget.shareToken || !budget.sharePin) {
+  if (!item.shareToken || !item.sharePin) {
     return (
       <div className="space-y-3 p-6 border border-border">
         <h2 className="font-semibold">Client link</h2>
@@ -104,16 +143,16 @@ export function BudgetSharePanel({ budget: initial }: { budget: Budget }) {
           {mutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
           <input
             type="checkbox"
-            checked={budget.shareEnabled}
+            checked={item.shareEnabled}
             onChange={(e) => run(e.target.checked ? "enable" : "disable")}
             disabled={mutation.isPending}
             className="w-4 h-4"
           />
-          {budget.shareEnabled ? "Active" : "Off"}
+          {item.shareEnabled ? "Active" : "Off"}
         </label>
       </div>
 
-      <div className={budget.shareEnabled ? "space-y-4" : "space-y-4 opacity-50"}>
+      <div className={item.shareEnabled ? "space-y-4" : "space-y-4 opacity-50"}>
         <div>
           <span className="block text-sm font-medium text-muted-foreground mb-1.5">Link</span>
           <div className="flex gap-2">
@@ -140,9 +179,9 @@ export function BudgetSharePanel({ budget: initial }: { budget: Budget }) {
           <span className="block text-sm font-medium text-muted-foreground mb-1.5">PIN</span>
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-3 py-1.5 bg-muted/30 border border-border text-lg tracking-[0.4em] tabular-nums">
-              {budget.sharePin}
+              {item.sharePin}
             </span>
-            <CopyButton value={budget.sharePin} label="Copy PIN" />
+            <CopyButton value={item.sharePin} label="Copy PIN" />
             <button
               type="button"
               onClick={() => run("new-pin")}
@@ -161,7 +200,7 @@ export function BudgetSharePanel({ budget: initial }: { budget: Budget }) {
         <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-red-500/10 text-sm text-red-400">
           <span className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
-            Locked after too many wrong PINs, until {formatDateTime(budget.shareLockedUntil!)}
+            Locked after too many wrong PINs, until {formatDateTime(item.shareLockedUntil!)}
           </span>
           <button type="button" onClick={() => run("unlock")} className="underline hover:no-underline">
             Unlock now
@@ -171,8 +210,8 @@ export function BudgetSharePanel({ budget: initial }: { budget: Budget }) {
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <p className="text-sm text-muted-foreground">
-          {budget.shareViewCount > 0 && budget.shareLastViewedAt
-            ? `Opened ${budget.shareViewCount} ${budget.shareViewCount === 1 ? "time" : "times"} · last ${formatDateTime(budget.shareLastViewedAt)}`
+          {item.shareViewCount > 0 && item.shareLastViewedAt
+            ? `Opened ${item.shareViewCount} ${item.shareViewCount === 1 ? "time" : "times"} · last ${formatDateTime(item.shareLastViewedAt)}`
             : "Not opened yet"}
         </p>
         <button

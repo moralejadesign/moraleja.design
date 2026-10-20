@@ -203,3 +203,96 @@ export const budgetPhases = pgTable("budget_phases", {
 
 export type BudgetPhase = typeof budgetPhases.$inferSelect;
 export type NewBudgetPhase = typeof budgetPhases.$inferInsert;
+
+// Briefings (private client questionnaires, admin-only)
+export type BriefingStatus = "draft" | "sent" | "in_progress" | "completed";
+export type BriefingTopic = "business" | "audience" | "competition" | "personality" | "visual" | "logistics";
+export type BriefingQuestionType =
+  | "short_text"
+  | "long_text"
+  | "single_choice"
+  | "multiple_choice"
+  | "slider" // scale between two opposite words
+  | "links" // URLs with an optional note
+  | "files";
+
+// Question wording in one language; a library question stores both
+export type BriefingQuestionContent = {
+  title: string;
+  help: string;
+  options: string[]; // choice questions
+  minLabel: string; // slider ends
+  maxLabel: string;
+};
+
+export type BriefingQuestion = BriefingQuestionContent & {
+  id: string;
+  topic: BriefingTopic;
+  type: BriefingQuestionType;
+  required: boolean;
+};
+
+// Links and files share a shape; for an uploaded file the note holds its name
+export type BriefingLink = { url: string; note: string };
+export type BriefingAnswer = string | string[] | number | BriefingLink[];
+
+export const briefings = pgTable("briefings", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 32 }).notNull().unique(), // e.g. "BRF-2026-003"
+  clientName: varchar("client_name", { length: 255 }).notNull(),
+  // Heading override; defaults to "{CLIENT} BRIEFING"
+  title: varchar("title", { length: 255 }),
+  language: varchar("language", { length: 2 }).notNull().default("es").$type<BudgetLanguage>(),
+  status: varchar("status", { length: 20 }).notNull().default("draft").$type<BriefingStatus>(),
+  // Welcome text on the client's first screen
+  intro: text("intro"),
+  questions: jsonb("questions").$type<BriefingQuestion[]>().notNull().default([]),
+  // Keyed by question id
+  answers: jsonb("answers").$type<Record<string, BriefingAnswer>>().notNull().default({}),
+  // Private notes per question id, never shown to the client
+  answerNotes: jsonb("answer_notes").$type<Record<string, string>>().notNull().default({}),
+  internalNotes: text("internal_notes"),
+  startedAt: timestamp("started_at"),
+  submittedAt: timestamp("submitted_at"),
+  // Private client link: /f/{shareToken}, opened with sharePin (same scheme as budgets)
+  shareToken: varchar("share_token", { length: 64 }).unique(),
+  sharePin: varchar("share_pin", { length: 12 }),
+  shareEnabled: boolean("share_enabled").notNull().default(false),
+  shareFailedAttempts: integer("share_failed_attempts").notNull().default(0),
+  shareLockedUntil: timestamp("share_locked_until"),
+  shareViewCount: integer("share_view_count").notNull().default(0),
+  shareLastViewedAt: timestamp("share_last_viewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type Briefing = typeof briefings.$inferSelect;
+export type NewBriefing = typeof briefings.$inferInsert;
+
+export const briefingQuestions = pgTable("briefing_questions", {
+  id: serial("id").primaryKey(),
+  topic: varchar("topic", { length: 20 }).notNull().$type<BriefingTopic>(),
+  type: varchar("type", { length: 20 }).notNull().$type<BriefingQuestionType>(),
+  required: boolean("required").notNull().default(false),
+  content: jsonb("content").$type<Record<BudgetLanguage, BriefingQuestionContent>>().notNull(),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type BriefingLibraryQuestion = typeof briefingQuestions.$inferSelect;
+export type NewBriefingLibraryQuestion = typeof briefingQuestions.$inferInsert;
+
+// Saved sets of library questions to start a briefing from; ids keep templates bilingual
+export const briefingTemplates = pgTable("briefing_templates", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  questionIds: jsonb("question_ids").$type<number[]>().notNull().default([]),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type BriefingTemplate = typeof briefingTemplates.$inferSelect;
+export type NewBriefingTemplate = typeof briefingTemplates.$inferInsert;

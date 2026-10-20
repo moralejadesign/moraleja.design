@@ -2,3 +2,5 @@
 export const MAX_PIN_ATTEMPTS = 5;
 export const PIN_LOCK_MINUTES = 15;
 export const ACCESS_DAYS = 30;
+
+export type PinState = { error: "wrong"; attemptsLeft: number } | { error: "locked" } | null;

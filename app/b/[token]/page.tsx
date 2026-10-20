@@ -8,7 +8,8 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { budgets } from "@/db/schema";
 import { accessCookieName, hasValidAccess } from "@/lib/budget-share";
-import { PinForm } from "./pin-form";
+import { PinForm } from "@/components/pin-form";
+import { verifyPin } from "./actions";
 import { SharedBudgetView } from "./shared-budget-view";
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ async function SharedBudget({ params }: { params: Promise<{ token: string }> }) 
 
   const cookie = (await cookies()).get(accessCookieName(token))?.value;
   if (!hasValidAccess(cookie, token, budget.sharePin)) {
-    return <PinForm token={token} language={budget.language} />;
+    return <PinForm verify={verifyPin.bind(null, token)} language={budget.language} />;
   }
 
   // Count client views, not your own checks while signed in to the admin

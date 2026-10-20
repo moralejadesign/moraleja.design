@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { budgets, type NewBudget } from "@/db/schema";
+import { budgets } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getAdminUserId } from "@/lib/admin-auth";
-import { generatePin, generateShareToken } from "@/lib/budget-share";
-
-type ShareAction = "create" | "enable" | "disable" | "new-pin" | "new-link" | "unlock";
+import { shareChanges, type ShareAction } from "@/lib/budget-share";
 
 /** Manages the client link: create, turn on/off, new PIN, new link, unlock. */
 export async function POST(
@@ -26,34 +24,9 @@ export async function POST(
       return NextResponse.json({ error: "Budget not found" }, { status: 404 });
     }
 
-    const unlock = { shareFailedAttempts: 0, shareLockedUntil: null };
-    let changes: Partial<NewBudget>;
-    switch (action) {
-      case "create":
-        changes = {
-          shareToken: budget.shareToken ?? generateShareToken(),
-          sharePin: budget.sharePin ?? generatePin(),
-          shareEnabled: true,
-          ...unlock,
-        };
-        break;
-      case "enable":
-        changes = { shareEnabled: true };
-        break;
-      case "disable":
-        changes = { shareEnabled: false };
-        break;
-      case "new-pin":
-        changes = { sharePin: generatePin(), ...unlock };
-        break;
-      case "new-link":
-        changes = { shareToken: generateShareToken(), shareViewCount: 0, shareLastViewedAt: null, ...unlock };
-        break;
-      case "unlock":
-        changes = unlock;
-        break;
-      default:
-        return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    const changes = shareChanges(action, budget);
+    if (!changes) {
+      return NextResponse.json({ error: "Unknown action" }, { status: 400 });
     }
 
     const [updated] = await db

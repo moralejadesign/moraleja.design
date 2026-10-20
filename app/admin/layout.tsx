@@ -44,6 +44,12 @@ export default function AdminLayout({
                   >
                     Budgets
                   </Link>
+                  <Link
+                    href="/admin/briefings"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Briefings
+                  </Link>
                 </nav>
               </div>
               <div className="flex items-center gap-4">

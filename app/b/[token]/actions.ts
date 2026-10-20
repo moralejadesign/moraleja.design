@@ -13,8 +13,8 @@ import {
   pinMatches,
   signAccess,
 } from "@/lib/budget-share";
+import type { PinState } from "@/lib/budget-share-config";
 
-export type PinState = { error: "wrong"; attemptsLeft: number } | { error: "locked" } | null;
 
 export async function verifyPin(token: string, _prev: PinState, formData: FormData): Promise<PinState> {
   const pin = String(formData.get("pin") ?? "");

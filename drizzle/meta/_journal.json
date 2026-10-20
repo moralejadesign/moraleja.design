@@ -36,6 +36,20 @@
       "when": 1791762461781,
       "tag": "0004_budgets",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792466384930,
+      "tag": "0005_briefings",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792468968374,
+      "tag": "0006_briefing_templates",
+      "breakpoints": true
     }
   ]
 }

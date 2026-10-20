@@ -32,7 +32,7 @@ import {
   sumSectionPrices,
 } from "@/lib/budgets";
 import { BudgetDocument } from "./budget-document";
-import { BudgetSharePanel } from "./budget-share-panel";
+import { BudgetSharePanel } from "./share-panel";
 import { ScaledBudget, printBudgetDocument } from "@/components/budget-viewer";
 import { STATUS_STYLES } from "./budgets-list";
 

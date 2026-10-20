@@ -11,8 +11,50 @@ export function generatePin() {
   return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }
 
-export function accessCookieName(token: string) {
-  return `budget_${token}`;
+/** Cookie set after the PIN is entered; briefings use their own prefix and path (/f/). */
+export function accessCookieName(token: string, kind: "budget" | "briefing" = "budget") {
+  return `${kind}_${token}`;
+}
+
+export type ShareAction = "create" | "enable" | "disable" | "new-pin" | "new-link" | "unlock";
+
+type ShareFields = {
+  shareToken: string | null;
+  sharePin: string | null;
+  shareEnabled: boolean;
+  shareFailedAttempts: number;
+  shareLockedUntil: Date | null;
+  shareViewCount: number;
+  shareLastViewedAt: Date | null;
+};
+
+/** Column changes for a client-link action, shared by budgets and briefings; null if unknown. */
+export function shareChanges(
+  action: ShareAction,
+  current: Pick<ShareFields, "shareToken" | "sharePin">
+): Partial<ShareFields> | null {
+  const unlock = { shareFailedAttempts: 0, shareLockedUntil: null };
+  switch (action) {
+    case "create":
+      return {
+        shareToken: current.shareToken ?? generateShareToken(),
+        sharePin: current.sharePin ?? generatePin(),
+        shareEnabled: true,
+        ...unlock,
+      };
+    case "enable":
+      return { shareEnabled: true };
+    case "disable":
+      return { shareEnabled: false };
+    case "new-pin":
+      return { sharePin: generatePin(), ...unlock };
+    case "new-link":
+      return { shareToken: generateShareToken(), shareViewCount: 0, shareLastViewedAt: null, ...unlock };
+    case "unlock":
+      return unlock;
+    default:
+      return null;
+  }
 }
 
 function secret() {
