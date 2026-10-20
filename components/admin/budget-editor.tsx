@@ -11,6 +11,7 @@ import {
   Cloud,
   FileDown,
   Copy,
+  Presentation,
   Plus,
   Trash2,
   ChevronUp,
@@ -258,6 +259,13 @@ export function BudgetEditor({ budget }: { budget: Budget }) {
             <Copy className="h-4 w-4" />
             Duplicate
           </button>
+          <Link
+            href={`/admin/budgets/${budget.id}/deck`}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-border hover:bg-muted transition-colors"
+          >
+            <Presentation className="h-4 w-4" />
+            Presentar
+          </Link>
           <button
             type="button"
             onClick={() => {
