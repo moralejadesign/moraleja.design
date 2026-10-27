@@ -204,6 +204,51 @@ export const budgetPhases = pgTable("budget_phases", {
 export type BudgetPhase = typeof budgetPhases.$inferSelect;
 export type NewBudgetPhase = typeof budgetPhases.$inferInsert;
 
+// Cuentas de cobro (payment requests), usually made from a budget
+export type ChargeStatus = "draft" | "sent" | "paid";
+
+export type ChargeItem = {
+  id: string;
+  description: string;
+  amount: number | null;
+};
+
+export const chargeAccounts = pgTable("charge_accounts", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 32 }).notNull().unique(), // e.g. "CC-2026-001"
+  budgetId: integer("budget_id").references(() => budgets.id, { onDelete: "set null" }),
+  clientName: varchar("client_name", { length: 255 }).notNull(),
+  clientTaxId: varchar("client_tax_id", { length: 64 }), // NIT, CC or foreign tax ID
+  language: varchar("language", { length: 2 }).notNull().default("es").$type<BudgetLanguage>(),
+  currency: varchar("currency", { length: 3 }).notNull().default("COP").$type<BudgetCurrency>(),
+  status: varchar("status", { length: 20 }).notNull().default("draft").$type<ChargeStatus>(),
+  issueDate: date("issue_date", { mode: "string" }).notNull(),
+  city: varchar("city", { length: 120 }),
+  items: jsonb("items").$type<ChargeItem[]>().notNull().default([]),
+  // Payment details printed on the document; starts from the billing profile
+  paymentDetails: text("payment_details"),
+  notes: jsonb("notes").$type<string[]>().notNull().default([]),
+  paidAt: date("paid_at", { mode: "string" }),
+  internalNotes: text("internal_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type ChargeAccount = typeof chargeAccounts.$inferSelect;
+export type NewChargeAccount = typeof chargeAccounts.$inferInsert;
+
+// Who charges: a single row with personal data, kept out of the (public) code
+export const billingProfile = pgTable("billing_profile", {
+  id: integer("id").primaryKey().default(1),
+  fullName: varchar("full_name", { length: 255 }).notNull().default(""),
+  idNumber: varchar("id_number", { length: 64 }).notNull().default(""),
+  city: varchar("city", { length: 120 }).notNull().default(""),
+  paymentDetails: text("payment_details").notNull().default(""),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type BillingProfile = typeof billingProfile.$inferSelect;
+
 // Briefings (private client questionnaires, admin-only)
 export type BriefingStatus = "draft" | "sent" | "in_progress" | "completed";
 export type BriefingTopic = "business" | "audience" | "competition" | "personality" | "visual" | "logistics";

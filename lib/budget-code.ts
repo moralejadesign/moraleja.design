@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { briefings, budgets } from "@/db/schema";
+import { briefings, budgets, chargeAccounts } from "@/db/schema";
 import { like } from "drizzle-orm";
 
 /** Next number for the year after the highest existing code with this prefix. */
@@ -28,5 +28,15 @@ export async function nextBriefingCode() {
     .select({ code: briefings.code })
     .from(briefings)
     .where(like(briefings.code, `${prefix}%`));
+  return nextInSequence(existing, prefix);
+}
+
+/** Next cuenta de cobro number for the year: CC-2026-001… */
+export async function nextChargeCode() {
+  const prefix = `CC-${new Date().getFullYear()}-`;
+  const existing = await db
+    .select({ code: chargeAccounts.code })
+    .from(chargeAccounts)
+    .where(like(chargeAccounts.code, `${prefix}%`));
   return nextInSequence(existing, prefix);
 }

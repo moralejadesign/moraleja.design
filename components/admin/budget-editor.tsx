@@ -34,6 +34,7 @@ import {
 } from "@/lib/budgets";
 import { BudgetDocument } from "./budget-document";
 import { BudgetSharePanel } from "./share-panel";
+import { BudgetChargesPanel } from "./budget-charges-panel";
 import { ScaledBudget, printBudgetDocument } from "@/components/budget-viewer";
 import { STATUS_STYLES } from "./budgets-list";
 
@@ -364,6 +365,11 @@ export function BudgetEditor({ budget }: { budget: Budget }) {
           </div>
 
           <BudgetSharePanel budget={budget} />
+
+          <BudgetChargesPanel
+            budget={{ id: budget.id, kind: formData.kind, advancePercent: formData.advancePercent }}
+            disabled={hasChanges}
+          />
 
           {/* Sections */}
           <div className="space-y-4 p-6 border border-border">
