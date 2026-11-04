@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, KeyRound, Link2, Loader2, Lock, RefreshCw } from "lucide-react";
-import type { Briefing, Budget } from "@/db/schema";
+import type { Briefing, Budget, Proposal } from "@/db/schema";
 import type { ShareAction } from "@/lib/budget-share";
 
-type Shareable = Budget | Briefing;
+type Shareable = Budget | Briefing | Proposal;
 
 /** Where each kind of document is managed and opened by the client. */
 const KINDS = {
   budget: { api: "/api/budgets", path: "/b", queryKey: "budget" },
   briefing: { api: "/api/briefings", path: "/f", queryKey: "briefing" },
+  // The proposal editor keeps its own copy (with rounds), so this cache key is unused
+  proposal: { api: "/api/proposals", path: "/r", queryKey: "proposal-link" },
 } as const;
 
 async function updateShare<T extends Shareable>({
@@ -78,6 +80,16 @@ export function BriefingSharePanel({
   onUpdated?: (briefing: Briefing) => void;
 }) {
   return <SharePanel kind="briefing" item={briefing} onUpdated={onUpdated} />;
+}
+
+export function ProposalSharePanel({
+  proposal,
+  onUpdated,
+}: {
+  proposal: Proposal;
+  onUpdated?: (proposal: Proposal) => void;
+}) {
+  return <SharePanel kind="proposal" item={proposal} onUpdated={onUpdated} />;
 }
 
 function SharePanel<T extends Shareable>({

@@ -341,3 +341,89 @@ export const briefingTemplates = pgTable("briefing_templates", {
 
 export type BriefingTemplate = typeof briefingTemplates.$inferSelect;
 export type NewBriefingTemplate = typeof briefingTemplates.$inferInsert;
+
+// Proposals (brand presentations the client reviews and comments on, admin-only)
+export type ProposalStatus = "draft" | "sent" | "in_review" | "changes_requested" | "approved";
+export type ProposalDecision = "approved" | "changes_requested";
+export type ProposalReaction = "like" | "changes";
+
+// One page of a round: a PDF page rendered to an image, or an uploaded image
+export type ProposalSlide = {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  title: string;
+};
+
+export const proposals = pgTable("proposals", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 32 }).notNull().unique(), // e.g. "PRP-2026-001"
+  clientName: varchar("client_name", { length: 255 }).notNull(),
+  // Heading override; defaults to "{CLIENT}"
+  title: varchar("title", { length: 255 }),
+  language: varchar("language", { length: 2 }).notNull().default("es").$type<BudgetLanguage>(),
+  status: varchar("status", { length: 20 }).notNull().default("draft").$type<ProposalStatus>(),
+  // Welcome text on the client's first screen
+  intro: text("intro"),
+  // The round the client sees; null until the first round has slides
+  currentVersionId: integer("current_version_id"),
+  // Lets the client browse earlier rounds (read-only)
+  showPastRounds: boolean("show_past_rounds").notNull().default(false),
+  internalNotes: text("internal_notes"),
+  // Private client link: /r/{shareToken}, opened with sharePin (same scheme as budgets)
+  shareToken: varchar("share_token", { length: 64 }).unique(),
+  sharePin: varchar("share_pin", { length: 12 }),
+  shareEnabled: boolean("share_enabled").notNull().default(false),
+  shareFailedAttempts: integer("share_failed_attempts").notNull().default(0),
+  shareLockedUntil: timestamp("share_locked_until"),
+  shareViewCount: integer("share_view_count").notNull().default(0),
+  shareLastViewedAt: timestamp("share_last_viewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type Proposal = typeof proposals.$inferSelect;
+export type NewProposal = typeof proposals.$inferInsert;
+
+// A round of the presentation (R1, R2…); comments stay with the round they were made on
+export const proposalVersions = pgTable("proposal_versions", {
+  id: serial("id").primaryKey(),
+  proposalId: integer("proposal_id").notNull().references(() => proposals.id, { onDelete: "cascade" }),
+  number: integer("number").notNull(),
+  // What changed since the last round, shown to the client
+  note: text("note"),
+  slides: jsonb("slides").$type<ProposalSlide[]>().notNull().default([]),
+  // Per slide id, each reviewer's quick verdict
+  reactions: jsonb("reactions").$type<Record<string, Record<string, ProposalReaction>>>().notNull().default({}),
+  decision: varchar("decision", { length: 20 }).$type<ProposalDecision>(),
+  decisionNote: text("decision_note"),
+  decidedBy: varchar("decided_by", { length: 80 }),
+  decidedAt: timestamp("decided_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type ProposalVersion = typeof proposalVersions.$inferSelect;
+export type NewProposalVersion = typeof proposalVersions.$inferInsert;
+
+export const proposalComments = pgTable("proposal_comments", {
+  id: serial("id").primaryKey(),
+  versionId: integer("version_id").notNull().references(() => proposalVersions.id, { onDelete: "cascade" }),
+  slideId: varchar("slide_id", { length: 32 }).notNull(),
+  // Replies point at the first comment of the thread
+  parentId: integer("parent_id"),
+  authorName: varchar("author_name", { length: 80 }).notNull(),
+  // Random id kept in the reviewer's browser, so they can delete their own comments
+  authorKey: varchar("author_key", { length: 64 }),
+  isAdmin: boolean("is_admin").notNull().default(false),
+  body: text("body").notNull(),
+  // Pin position as a fraction of the slide (0–1); null for a comment on the whole slide
+  x: real("x"),
+  y: real("y"),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type ProposalComment = typeof proposalComments.$inferSelect;
+export type NewProposalComment = typeof proposalComments.$inferInsert;

@@ -11,8 +11,8 @@ export function generatePin() {
   return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }
 
-/** Cookie set after the PIN is entered; briefings use their own prefix and path (/f/). */
-export function accessCookieName(token: string, kind: "budget" | "briefing" = "budget") {
+/** Cookie set after the PIN is entered; briefings (/f/) and proposals (/r/) use their own prefix and path. */
+export function accessCookieName(token: string, kind: "budget" | "briefing" | "proposal" = "budget") {
   return `${kind}_${token}`;
 }
 

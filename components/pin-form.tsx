@@ -9,14 +9,22 @@ import type { PinState } from "@/lib/budget-share-config";
 
 const COPY = {
   es: {
-    prompt: { budget: "Ingresa el PIN para ver la propuesta", briefing: "Ingresa el PIN para abrir el briefing" },
-    submit: { budget: "Ver propuesta", briefing: "Abrir" },
+    prompt: {
+      budget: "Ingresa el PIN para ver la propuesta",
+      briefing: "Ingresa el PIN para abrir el briefing",
+      proposal: "Ingresa el PIN para revisar la propuesta",
+    },
+    submit: { budget: "Ver propuesta", briefing: "Abrir", proposal: "Abrir" },
     wrong: (left: number) => `PIN incorrecto. ${left === 1 ? "Te queda 1 intento" : `Te quedan ${left} intentos`}.`,
     locked: `Demasiados intentos. Intenta de nuevo en ${PIN_LOCK_MINUTES} minutos.`,
   },
   en: {
-    prompt: { budget: "Enter the PIN to view the proposal", briefing: "Enter the PIN to open the briefing" },
-    submit: { budget: "View proposal", briefing: "Open" },
+    prompt: {
+      budget: "Enter the PIN to view the proposal",
+      briefing: "Enter the PIN to open the briefing",
+      proposal: "Enter the PIN to review the proposal",
+    },
+    submit: { budget: "View proposal", briefing: "Open", proposal: "Open" },
     wrong: (left: number) => `Wrong PIN. ${left === 1 ? "1 attempt" : `${left} attempts`} left.`,
     locked: `Too many attempts. Try again in ${PIN_LOCK_MINUTES} minutes.`,
   },
@@ -30,7 +38,7 @@ export function PinForm({
 }: {
   verify: (prev: PinState, formData: FormData) => Promise<PinState>;
   language: BudgetLanguage;
-  kind?: "budget" | "briefing";
+  kind?: "budget" | "briefing" | "proposal";
 }) {
   const [state, action, isPending] = useActionState<PinState, FormData>(verify, null);
   const t = COPY[language];

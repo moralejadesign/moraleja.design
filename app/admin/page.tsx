@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { FolderOpen, Settings, BarChart3, ShoppingBag, FlaskConical, Receipt, ClipboardList } from "lucide-react";
+import { FolderOpen, Settings, BarChart3, ShoppingBag, FlaskConical, Receipt, ClipboardList, Presentation } from "lucide-react";
 
 export default async function AdminPage() {
   const { userId } = await auth();
@@ -65,6 +65,17 @@ export default async function AdminPage() {
           <h2 className="font-semibold mb-1">Briefings</h2>
           <p className="text-sm text-muted-foreground">
             Send clients a questionnaire and turn the answers into a brief
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/proposals"
+          className="group p-6 border border-border hover:border-foreground/30 transition-colors"
+        >
+          <Presentation className="h-8 w-8 mb-3 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <h2 className="font-semibold mb-1">Proposals</h2>
+          <p className="text-sm text-muted-foreground">
+            Share brand presentations and collect the client&apos;s comments
           </p>
         </Link>
 

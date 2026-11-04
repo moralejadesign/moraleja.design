@@ -50,6 +50,12 @@ export default function AdminLayout({
                   >
                     Briefings
                   </Link>
+                  <Link
+                    href="/admin/proposals"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Proposals
+                  </Link>
                 </nav>
               </div>
               <div className="flex items-center gap-4">
