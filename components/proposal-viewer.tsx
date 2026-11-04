@@ -757,7 +757,11 @@ function Filmstrip({
   onNext: () => void;
 }) {
   const activeRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => activeRef.current?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" }), [index]);
+  // Braces matter: newer browsers return a Promise from scrollIntoView, and React
+  // would call that return value as the effect's cleanup on the next slide change
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+  }, [index]);
 
   return (
     <div className="flex items-center gap-2 px-3 pb-3 shrink-0">
